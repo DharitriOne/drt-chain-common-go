@@ -9,28 +9,28 @@ import (
 	vmcommon "github.com/DharitriOne/drt-chain-vm-common-go"
 )
 
-type dctNFTAddUri struct {
+type dcdtNFTAddUri struct {
 	baseActiveHandler
 	keyPrefix             []byte
-	dctStorageHandler     vmcommon.DCTNFTStorageHandler
-	globalSettingsHandler vmcommon.DCTGlobalSettingsHandler
-	rolesHandler          vmcommon.DCTRoleHandler
+	dcdtStorageHandler    vmcommon.DCDTNFTStorageHandler
+	globalSettingsHandler vmcommon.DCDTGlobalSettingsHandler
+	rolesHandler          vmcommon.DCDTRoleHandler
 	gasConfig             vmcommon.BaseOperationCost
 	funcGasCost           uint64
 	mutExecution          sync.RWMutex
 }
 
-// NewDCTNFTAddUriFunc returns the dct NFT add URI built-in function component
-func NewDCTNFTAddUriFunc(
+// NewDCDTNFTAddUriFunc returns the dcdt NFT add URI built-in function component
+func NewDCDTNFTAddUriFunc(
 	funcGasCost uint64,
 	gasConfig vmcommon.BaseOperationCost,
-	dctStorageHandler vmcommon.DCTNFTStorageHandler,
-	globalSettingsHandler vmcommon.DCTGlobalSettingsHandler,
-	rolesHandler vmcommon.DCTRoleHandler,
+	dcdtStorageHandler vmcommon.DCDTNFTStorageHandler,
+	globalSettingsHandler vmcommon.DCDTGlobalSettingsHandler,
+	rolesHandler vmcommon.DCDTRoleHandler,
 	enableEpochsHandler vmcommon.EnableEpochsHandler,
-) (*dctNFTAddUri, error) {
-	if check.IfNil(dctStorageHandler) {
-		return nil, ErrNilDCTNFTStorageHandler
+) (*dcdtNFTAddUri, error) {
+	if check.IfNil(dcdtStorageHandler) {
+		return nil, ErrNilDCDTNFTStorageHandler
 	}
 	if check.IfNil(globalSettingsHandler) {
 		return nil, ErrNilGlobalSettingsHandler
@@ -42,9 +42,9 @@ func NewDCTNFTAddUriFunc(
 		return nil, ErrNilEnableEpochsHandler
 	}
 
-	e := &dctNFTAddUri{
-		keyPrefix:             []byte(baseDCTKeyPrefix),
-		dctStorageHandler:     dctStorageHandler,
+	e := &dcdtNFTAddUri{
+		keyPrefix:             []byte(baseDCDTKeyPrefix),
+		dcdtStorageHandler:    dcdtStorageHandler,
 		funcGasCost:           funcGasCost,
 		mutExecution:          sync.RWMutex{},
 		globalSettingsHandler: globalSettingsHandler,
@@ -53,37 +53,37 @@ func NewDCTNFTAddUriFunc(
 	}
 
 	e.baseActiveHandler.activeHandler = func() bool {
-		return enableEpochsHandler.IsFlagEnabled(DCTNFTImprovementV1Flag)
+		return enableEpochsHandler.IsFlagEnabled(DCDTNFTImprovementV1Flag)
 	}
 
 	return e, nil
 }
 
 // SetNewGasConfig is called whenever gas cost is changed
-func (e *dctNFTAddUri) SetNewGasConfig(gasCost *vmcommon.GasCost) {
+func (e *dcdtNFTAddUri) SetNewGasConfig(gasCost *vmcommon.GasCost) {
 	if gasCost == nil {
 		return
 	}
 
 	e.mutExecution.Lock()
-	e.funcGasCost = gasCost.BuiltInCost.DCTNFTAddURI
+	e.funcGasCost = gasCost.BuiltInCost.DCDTNFTAddURI
 	e.gasConfig = gasCost.BaseOperationCost
 	e.mutExecution.Unlock()
 }
 
-// ProcessBuiltinFunction resolves DCT NFT add uris function call
+// ProcessBuiltinFunction resolves DCDT NFT add uris function call
 // Requires 3 arguments:
 // arg0 - token identifier
 // arg1 - nonce
 // arg[2:] - uris to add
-func (e *dctNFTAddUri) ProcessBuiltinFunction(
+func (e *dcdtNFTAddUri) ProcessBuiltinFunction(
 	acntSnd, _ vmcommon.UserAccountHandler,
 	vmInput *vmcommon.ContractCallInput,
 ) (*vmcommon.VMOutput, error) {
 	e.mutExecution.RLock()
 	defer e.mutExecution.RUnlock()
 
-	err := checkDCTNFTCreateBurnAddInput(acntSnd, vmInput, e.funcGasCost)
+	err := checkDCDTNFTCreateBurnAddInput(acntSnd, vmInput, e.funcGasCost)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func (e *dctNFTAddUri) ProcessBuiltinFunction(
 		return nil, ErrInvalidArguments
 	}
 
-	err = e.rolesHandler.CheckAllowedToExecute(acntSnd, vmInput.Arguments[0], []byte(core.DCTRoleNFTAddURI))
+	err = e.rolesHandler.CheckAllowedToExecute(acntSnd, vmInput.Arguments[0], []byte(core.DCDTRoleNFTAddURI))
 	if err != nil {
 		return nil, err
 	}
@@ -101,19 +101,19 @@ func (e *dctNFTAddUri) ProcessBuiltinFunction(
 		return nil, ErrNotEnoughGas
 	}
 
-	dctTokenKey := append(e.keyPrefix, vmInput.Arguments[0]...)
+	dcdtTokenKey := append(e.keyPrefix, vmInput.Arguments[0]...)
 	nonce := big.NewInt(0).SetBytes(vmInput.Arguments[1]).Uint64()
 	if nonce == 0 {
 		return nil, ErrNFTDoesNotHaveMetadata
 	}
-	dctData, err := e.dctStorageHandler.GetDCTNFTTokenOnSender(acntSnd, dctTokenKey, nonce)
+	dcdtData, err := e.dcdtStorageHandler.GetDCDTNFTTokenOnSender(acntSnd, dcdtTokenKey, nonce)
 	if err != nil {
 		return nil, err
 	}
 
-	dctData.TokenMetaData.URIs = append(dctData.TokenMetaData.URIs, vmInput.Arguments[2:]...)
+	dcdtData.TokenMetaData.URIs = append(dcdtData.TokenMetaData.URIs, vmInput.Arguments[2:]...)
 
-	_, err = e.dctStorageHandler.SaveDCTNFTToken(acntSnd.AddressBytes(), acntSnd, dctTokenKey, nonce, dctData, true, vmInput.ReturnCallAfterError)
+	_, err = e.dcdtStorageHandler.SaveDCDTNFTToken(acntSnd.AddressBytes(), acntSnd, dcdtTokenKey, nonce, dcdtData, true, vmInput.ReturnCallAfterError)
 	if err != nil {
 		return nil, err
 	}
@@ -124,12 +124,12 @@ func (e *dctNFTAddUri) ProcessBuiltinFunction(
 	}
 
 	extraTopics := append([][]byte{vmInput.CallerAddr}, vmInput.Arguments[2:]...)
-	addDCTEntryInVMOutput(vmOutput, []byte(core.BuiltInFunctionDCTNFTAddURI), vmInput.Arguments[0], nonce, big.NewInt(0), extraTopics...)
+	addDCDTEntryInVMOutput(vmOutput, []byte(core.BuiltInFunctionDCDTNFTAddURI), vmInput.Arguments[0], nonce, big.NewInt(0), extraTopics...)
 
 	return vmOutput, nil
 }
 
-func (e *dctNFTAddUri) getGasCostForURIStore(vmInput *vmcommon.ContractCallInput) uint64 {
+func (e *dcdtNFTAddUri) getGasCostForURIStore(vmInput *vmcommon.ContractCallInput) uint64 {
 	lenURIs := 0
 	for _, uri := range vmInput.Arguments[2:] {
 		lenURIs += len(uri)
@@ -138,6 +138,6 @@ func (e *dctNFTAddUri) getGasCostForURIStore(vmInput *vmcommon.ContractCallInput
 }
 
 // IsInterfaceNil returns true if underlying object in nil
-func (e *dctNFTAddUri) IsInterfaceNil() bool {
+func (e *dcdtNFTAddUri) IsInterfaceNil() bool {
 	return e == nil
 }

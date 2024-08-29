@@ -7,31 +7,31 @@ import (
 	"github.com/DharitriOne/drt-chain-core-go/core/sharding"
 )
 
-func (odp *operationDataFieldParser) parseSingleDCTNFTTransfer(args [][]byte, function string, sender, receiver []byte, numOfShards uint32) *ResponseParseData {
-	responseParse, parsedDCTTransfers, ok := odp.extractDCTData(args, function, sender, receiver)
+func (odp *operationDataFieldParser) parseSingleDCDTNFTTransfer(args [][]byte, function string, sender, receiver []byte, numOfShards uint32) *ResponseParseData {
+	responseParse, parsedDCDTTransfers, ok := odp.extractDCDTData(args, function, sender, receiver)
 	if !ok {
 		return responseParse
 	}
 
-	if core.IsSmartContractAddress(parsedDCTTransfers.RcvAddr) && isASCIIString(parsedDCTTransfers.CallFunction) {
-		responseParse.Function = parsedDCTTransfers.CallFunction
+	if core.IsSmartContractAddress(parsedDCDTTransfers.RcvAddr) && isASCIIString(parsedDCDTTransfers.CallFunction) {
+		responseParse.Function = parsedDCDTTransfers.CallFunction
 	}
 
-	if len(parsedDCTTransfers.DCTTransfers) == 0 || !isASCIIString(string(parsedDCTTransfers.DCTTransfers[0].DCTTokenName)) {
+	if len(parsedDCDTTransfers.DCDTTransfers) == 0 || !isASCIIString(string(parsedDCDTTransfers.DCDTTransfers[0].DCDTTokenName)) {
 		return responseParse
 	}
 
 	rcvAddr := receiver
 	if bytes.Equal(sender, receiver) {
-		rcvAddr = parsedDCTTransfers.RcvAddr
+		rcvAddr = parsedDCDTTransfers.RcvAddr
 	}
 
-	dctNFTTransfer := parsedDCTTransfers.DCTTransfers[0]
+	dcdtNFTTransfer := parsedDCDTTransfers.DCDTTransfers[0]
 	receiverShardID := sharding.ComputeShardID(rcvAddr, numOfShards)
-	token := computeTokenIdentifier(string(dctNFTTransfer.DCTTokenName), dctNFTTransfer.DCTTokenNonce)
+	token := computeTokenIdentifier(string(dcdtNFTTransfer.DCDTTokenName), dcdtNFTTransfer.DCDTTokenNonce)
 
 	responseParse.Tokens = append(responseParse.Tokens, token)
-	responseParse.DCTValues = append(responseParse.DCTValues, dctNFTTransfer.DCTValue.String())
+	responseParse.DCDTValues = append(responseParse.DCDTValues, dcdtNFTTransfer.DCDTValue.String())
 
 	if len(rcvAddr) != len(sender) {
 		return responseParse

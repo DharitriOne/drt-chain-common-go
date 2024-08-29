@@ -12,33 +12,33 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewDCTTransferRoleAddressFunc(t *testing.T) {
-	_, err := NewDCTTransferRoleAddressFunc(nil, &mock.MarshalizerMock{}, 10, true, &mock.EnableEpochsHandlerStub{
+func TestNewDCDTTransferRoleAddressFunc(t *testing.T) {
+	_, err := NewDCDTTransferRoleAddressFunc(nil, &mock.MarshalizerMock{}, 10, true, &mock.EnableEpochsHandlerStub{
 		IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
 			return flag == SendAlwaysFlag
 		},
 	})
 	assert.Equal(t, err, ErrNilAccountsAdapter)
 
-	_, err = NewDCTTransferRoleAddressFunc(&mock.AccountsStub{}, nil, 10, true, &mock.EnableEpochsHandlerStub{
+	_, err = NewDCDTTransferRoleAddressFunc(&mock.AccountsStub{}, nil, 10, true, &mock.EnableEpochsHandlerStub{
 		IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
 			return flag == SendAlwaysFlag
 		},
 	})
 	assert.Equal(t, err, ErrNilMarshalizer)
 
-	e, err := NewDCTTransferRoleAddressFunc(&mock.AccountsStub{}, &mock.MarshalizerMock{}, 0, true, &mock.EnableEpochsHandlerStub{
+	e, err := NewDCDTTransferRoleAddressFunc(&mock.AccountsStub{}, &mock.MarshalizerMock{}, 0, true, &mock.EnableEpochsHandlerStub{
 		IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
 			return flag == SendAlwaysFlag
 		},
 	})
 	assert.Equal(t, err, ErrInvalidMaxNumAddresses)
 
-	_, err = NewDCTTransferRoleAddressFunc(&mock.AccountsStub{}, &mock.MarshalizerMock{}, 10, true, nil)
+	_, err = NewDCDTTransferRoleAddressFunc(&mock.AccountsStub{}, &mock.MarshalizerMock{}, 10, true, nil)
 	assert.Equal(t, err, ErrNilEnableEpochsHandler)
 	assert.True(t, check.IfNil(e))
 
-	e, err = NewDCTTransferRoleAddressFunc(&mock.AccountsStub{}, &mock.MarshalizerMock{}, 10, true, &mock.EnableEpochsHandlerStub{
+	e, err = NewDCDTTransferRoleAddressFunc(&mock.AccountsStub{}, &mock.MarshalizerMock{}, 10, true, &mock.EnableEpochsHandlerStub{
 		IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
 			return flag == SendAlwaysFlag
 		},
@@ -49,10 +49,10 @@ func TestNewDCTTransferRoleAddressFunc(t *testing.T) {
 	assert.False(t, e.IsInterfaceNil())
 }
 
-func TestDCTTransferRoleProcessBuiltInFunction_Errors(t *testing.T) {
+func TestDCDTTransferRoleProcessBuiltInFunction_Errors(t *testing.T) {
 	accounts := &mock.AccountsStub{}
 	marshaller := &mock.MarshalizerMock{}
-	e, err := NewDCTTransferRoleAddressFunc(accounts, marshaller, 10, true, &mock.EnableEpochsHandlerStub{
+	e, err := NewDCDTTransferRoleAddressFunc(accounts, marshaller, 10, true, &mock.EnableEpochsHandlerStub{
 		IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
 			return flag == SendAlwaysFlag
 		},
@@ -73,9 +73,9 @@ func TestDCTTransferRoleProcessBuiltInFunction_Errors(t *testing.T) {
 	}
 
 	_, err = e.ProcessBuiltinFunction(nil, nil, vmInput)
-	assert.Equal(t, err, ErrAddressIsNotDCTSystemSC)
+	assert.Equal(t, err, ErrAddressIsNotDCDTSystemSC)
 
-	vmInput.CallerAddr = core.DCTSCAddress
+	vmInput.CallerAddr = core.DCDTSCAddress
 	_, err = e.ProcessBuiltinFunction(nil, nil, vmInput)
 	assert.Equal(t, err, ErrOnlySystemAccountAccepted)
 
@@ -110,10 +110,10 @@ func TestDCTTransferRoleProcessBuiltInFunction_Errors(t *testing.T) {
 	assert.Equal(t, err, errNotImplemented)
 }
 
-func TestDCTTransferRoleProcessBuiltInFunction_AddNewAddresses(t *testing.T) {
+func TestDCDTTransferRoleProcessBuiltInFunction_AddNewAddresses(t *testing.T) {
 	accounts := &mock.AccountsStub{}
 	marshaller := &mock.MarshalizerMock{}
-	e, err := NewDCTTransferRoleAddressFunc(accounts, marshaller, 10, true, &mock.EnableEpochsHandlerStub{
+	e, err := NewDCDTTransferRoleAddressFunc(accounts, marshaller, 10, true, &mock.EnableEpochsHandlerStub{
 		IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
 			return flag == SendAlwaysFlag
 		},
@@ -122,7 +122,7 @@ func TestDCTTransferRoleProcessBuiltInFunction_AddNewAddresses(t *testing.T) {
 
 	vmInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr: core.DCTSCAddress,
+			CallerAddr: core.DCDTSCAddress,
 			CallValue:  big.NewInt(0),
 			Arguments:  [][]byte{[]byte("token"), {1}, {2}, {3}},
 		},
@@ -140,25 +140,25 @@ func TestDCTTransferRoleProcessBuiltInFunction_AddNewAddresses(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, vmOutput.ReturnCode, vmcommon.Ok)
 
-	addresses, _, _ := getDCTRolesForAcnt(e.marshaller, systemAcc, append(transferAddressesKeyPrefix, vmInput.Arguments[0]...))
+	addresses, _, _ := getDCDTRolesForAcnt(e.marshaller, systemAcc, append(transferAddressesKeyPrefix, vmInput.Arguments[0]...))
 	assert.Equal(t, len(addresses.Roles), 3)
 
 	vmOutput, err = e.ProcessBuiltinFunction(nil, nil, vmInput)
 	assert.Nil(t, err)
 	assert.Equal(t, vmOutput.ReturnCode, vmcommon.Ok)
 
-	addresses, _, _ = getDCTRolesForAcnt(e.marshaller, systemAcc, append(transferAddressesKeyPrefix, vmInput.Arguments[0]...))
+	addresses, _, _ = getDCDTRolesForAcnt(e.marshaller, systemAcc, append(transferAddressesKeyPrefix, vmInput.Arguments[0]...))
 	assert.Equal(t, len(addresses.Roles), 3)
 
 	e.set = false
 	vmOutput, err = e.ProcessBuiltinFunction(nil, nil, vmInput)
 	assert.Nil(t, err)
 	assert.Equal(t, vmOutput.ReturnCode, vmcommon.Ok)
-	addresses, _, _ = getDCTRolesForAcnt(e.marshaller, systemAcc, append(transferAddressesKeyPrefix, vmInput.Arguments[0]...))
+	addresses, _, _ = getDCDTRolesForAcnt(e.marshaller, systemAcc, append(transferAddressesKeyPrefix, vmInput.Arguments[0]...))
 	assert.Equal(t, len(addresses.Roles), 0)
 }
 
-func TestGetDctRolesForAcnt(t *testing.T) {
+func TestGetDcdtRolesForAcnt(t *testing.T) {
 	t.Parallel()
 
 	acc := &mock.AccountWrapMock{
@@ -166,12 +166,12 @@ func TestGetDctRolesForAcnt(t *testing.T) {
 			return nil, 0, core.NewGetNodeFromDBErrWithKey([]byte("key"), errors.New("error"), "")
 		},
 	}
-	addresses, _, err := getDCTRolesForAcnt(&mock.MarshalizerMock{}, acc, []byte("key"))
+	addresses, _, err := getDCDTRolesForAcnt(&mock.MarshalizerMock{}, acc, []byte("key"))
 	assert.Nil(t, addresses)
 	assert.True(t, core.IsGetNodeFromDBError(err))
 }
 
-func TestDCTTransferRoleIsSenderOrDestinationWithTransferRole(t *testing.T) {
+func TestDCDTTransferRoleIsSenderOrDestinationWithTransferRole(t *testing.T) {
 	accounts := &mock.AccountsStub{}
 	marshaller := &mock.MarshalizerMock{}
 	enableEpochsHandler := &mock.EnableEpochsHandlerStub{
@@ -179,12 +179,12 @@ func TestDCTTransferRoleIsSenderOrDestinationWithTransferRole(t *testing.T) {
 			return flag == SendAlwaysFlag
 		},
 	}
-	e, err := NewDCTTransferRoleAddressFunc(accounts, marshaller, 10, true, enableEpochsHandler)
+	e, err := NewDCDTTransferRoleAddressFunc(accounts, marshaller, 10, true, enableEpochsHandler)
 	assert.Nil(t, err)
 
 	vmInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr: core.DCTSCAddress,
+			CallerAddr: core.DCDTSCAddress,
 			CallValue:  big.NewInt(0),
 			Arguments:  [][]byte{[]byte("token"), {1}, {2}, {3}},
 		},
@@ -202,14 +202,14 @@ func TestDCTTransferRoleIsSenderOrDestinationWithTransferRole(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, vmOutput.ReturnCode, vmcommon.Ok)
 
-	addresses, _, _ := getDCTRolesForAcnt(e.marshaller, systemAcc, append(transferAddressesKeyPrefix, vmInput.Arguments[0]...))
+	addresses, _, _ := getDCDTRolesForAcnt(e.marshaller, systemAcc, append(transferAddressesKeyPrefix, vmInput.Arguments[0]...))
 	assert.Equal(t, len(addresses.Roles), 3)
 
-	globalSettings, _ := NewDCTGlobalSettingsFunc(
+	globalSettings, _ := NewDCDTGlobalSettingsFunc(
 		accounts,
 		marshaller,
 		true,
-		vmcommon.BuiltInFunctionDCTSetBurnRoleForAll,
+		vmcommon.BuiltInFunctionDCDTSetBurnRoleForAll,
 		func() bool {
 			return enableEpochsHandler.IsFlagEnabledCalled(SendAlwaysFlag)
 		},
@@ -226,7 +226,7 @@ func TestDCTTransferRoleIsSenderOrDestinationWithTransferRole(t *testing.T) {
 	vmOutput, err = e.ProcessBuiltinFunction(nil, nil, vmInput)
 	assert.Nil(t, err)
 	assert.Equal(t, vmOutput.ReturnCode, vmcommon.Ok)
-	addresses, _, _ = getDCTRolesForAcnt(e.marshaller, systemAcc, append(transferAddressesKeyPrefix, vmInput.Arguments[0]...))
+	addresses, _, _ = getDCDTRolesForAcnt(e.marshaller, systemAcc, append(transferAddressesKeyPrefix, vmInput.Arguments[0]...))
 	assert.Equal(t, len(addresses.Roles), 0)
 	assert.False(t, globalSettings.IsSenderOrDestinationWithTransferRole(nil, nil, nil))
 	assert.False(t, globalSettings.IsSenderOrDestinationWithTransferRole(vmInput.Arguments[1], []byte("random"), []byte("random")))

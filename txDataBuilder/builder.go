@@ -137,24 +137,24 @@ func (builder *txDataBuilder) BigInt(value *big.Int) *txDataBuilder {
 	return builder.Bytes(value.Bytes())
 }
 
-// IssueDCT appends to the data string all the elements required to request an DCT issuing.
-func (builder *txDataBuilder) IssueDCT(token string, ticker string, supply int64, numDecimals byte) *txDataBuilder {
+// IssueDCDT appends to the data string all the elements required to request an DCDT issuing.
+func (builder *txDataBuilder) IssueDCDT(token string, ticker string, supply int64, numDecimals byte) *txDataBuilder {
 	return builder.Func("issue").Str(token).Str(ticker).Int64(supply).Byte(numDecimals)
 }
 
-// TransferDCT appends to the data string all the elements required to request an DCT transfer.
-func (builder *txDataBuilder) TransferDCT(token string, value int64) *txDataBuilder {
-	return builder.Func(core.BuiltInFunctionDCTTransfer).Str(token).Int64(value)
+// TransferDCDT appends to the data string all the elements required to request an DCDT transfer.
+func (builder *txDataBuilder) TransferDCDT(token string, value int64) *txDataBuilder {
+	return builder.Func(core.BuiltInFunctionDCDTTransfer).Str(token).Int64(value)
 }
 
-// TransferDCTNFT appends to the data string all the elements required to request an DCT NFT transfer.
-func (builder *txDataBuilder) TransferDCTNFT(token string, nonce int, value int64) *txDataBuilder {
-	return builder.Func(core.BuiltInFunctionDCTNFTTransfer).Str(token).Int(nonce).Int64(value)
+// TransferDCDTNFT appends to the data string all the elements required to request an DCDT NFT transfer.
+func (builder *txDataBuilder) TransferDCDTNFT(token string, nonce int, value int64) *txDataBuilder {
+	return builder.Func(core.BuiltInFunctionDCDTNFTTransfer).Str(token).Int(nonce).Int64(value)
 }
 
-// BurnDCT appends to the data string all the elements required to burn DCT tokens.
-func (builder *txDataBuilder) BurnDCT(token string, value int64) *txDataBuilder {
-	return builder.Func(core.BuiltInFunctionDCTBurn).Str(token).Int64(value)
+// BurnDCDT appends to the data string all the elements required to burn DCDT tokens.
+func (builder *txDataBuilder) BurnDCDT(token string, value int64) *txDataBuilder {
+	return builder.Func(core.BuiltInFunctionDCDTBurn).Str(token).Int64(value)
 }
 
 // CanFreeze appends "canFreeze" followed by the provided boolean value.

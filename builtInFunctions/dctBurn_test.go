@@ -6,19 +6,19 @@ import (
 
 	"github.com/DharitriOne/drt-chain-core-go/core"
 	"github.com/DharitriOne/drt-chain-core-go/core/check"
-	"github.com/DharitriOne/drt-chain-core-go/data/dct"
+	"github.com/DharitriOne/drt-chain-core-go/data/dcdt"
 	vmcommon "github.com/DharitriOne/drt-chain-vm-common-go"
 	"github.com/DharitriOne/drt-chain-vm-common-go/mock"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewDCTBurnFunc(t *testing.T) {
+func TestNewDCDTBurnFunc(t *testing.T) {
 	t.Parallel()
 
 	t.Run("nil marshaller should error", func(t *testing.T) {
 		t.Parallel()
 
-		burnFunc, err := NewDCTBurnFunc(10, nil, &mock.GlobalSettingsHandlerStub{}, &mock.EnableEpochsHandlerStub{
+		burnFunc, err := NewDCDTBurnFunc(10, nil, &mock.GlobalSettingsHandlerStub{}, &mock.EnableEpochsHandlerStub{
 			IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
 				return flag == GlobalMintBurnFlag
 			},
@@ -29,14 +29,14 @@ func TestNewDCTBurnFunc(t *testing.T) {
 	t.Run("nil enable epochs handler should error", func(t *testing.T) {
 		t.Parallel()
 
-		burnFunc, err := NewDCTBurnFunc(10, &mock.MarshalizerMock{}, &mock.GlobalSettingsHandlerStub{}, nil)
+		burnFunc, err := NewDCDTBurnFunc(10, &mock.MarshalizerMock{}, &mock.GlobalSettingsHandlerStub{}, nil)
 		assert.Equal(t, ErrNilEnableEpochsHandler, err)
 		assert.True(t, check.IfNil(burnFunc))
 	})
 	t.Run("should work", func(t *testing.T) {
 		t.Parallel()
 
-		burnFunc, err := NewDCTBurnFunc(10, &mock.MarshalizerMock{}, &mock.GlobalSettingsHandlerStub{}, &mock.EnableEpochsHandlerStub{
+		burnFunc, err := NewDCDTBurnFunc(10, &mock.MarshalizerMock{}, &mock.GlobalSettingsHandlerStub{}, &mock.EnableEpochsHandlerStub{
 			IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
 				return flag == GlobalMintBurnFlag
 			},
@@ -46,11 +46,11 @@ func TestNewDCTBurnFunc(t *testing.T) {
 	})
 }
 
-func TestDCTBurn_ProcessBuiltInFunctionErrors(t *testing.T) {
+func TestDCDTBurn_ProcessBuiltInFunctionErrors(t *testing.T) {
 	t.Parallel()
 
 	globalSettingsHandler := &mock.GlobalSettingsHandlerStub{}
-	burnFunc, _ := NewDCTBurnFunc(10, &mock.MarshalizerMock{}, globalSettingsHandler, &mock.EnableEpochsHandlerStub{
+	burnFunc, _ := NewDCDTBurnFunc(10, &mock.MarshalizerMock{}, globalSettingsHandler, &mock.EnableEpochsHandlerStub{
 		IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
 			return flag == GlobalMintBurnFlag
 		},
@@ -76,9 +76,9 @@ func TestDCTBurn_ProcessBuiltInFunctionErrors(t *testing.T) {
 	value := []byte("value")
 	input.Arguments = [][]byte{key, value}
 	_, err = burnFunc.ProcessBuiltinFunction(nil, nil, input)
-	assert.Equal(t, err, ErrAddressIsNotDCTSystemSC)
+	assert.Equal(t, err, ErrAddressIsNotDCDTSystemSC)
 
-	input.RecipientAddr = core.DCTSCAddress
+	input.RecipientAddr = core.DCDTSCAddress
 	input.GasProvided = burnFunc.funcGasCost - 1
 	accSnd := mock.NewUserAccount([]byte("dst"))
 	_, err = burnFunc.ProcessBuiltinFunction(accSnd, nil, input)
@@ -92,15 +92,15 @@ func TestDCTBurn_ProcessBuiltInFunctionErrors(t *testing.T) {
 	}
 	input.GasProvided = burnFunc.funcGasCost
 	_, err = burnFunc.ProcessBuiltinFunction(accSnd, nil, input)
-	assert.Equal(t, err, ErrDCTTokenIsPaused)
+	assert.Equal(t, err, ErrDCDTTokenIsPaused)
 }
 
-func TestDCTBurn_ProcessBuiltInFunctionSenderBurns(t *testing.T) {
+func TestDCDTBurn_ProcessBuiltInFunctionSenderBurns(t *testing.T) {
 	t.Parallel()
 
 	marshaller := &mock.MarshalizerMock{}
 	globalSettingsHandler := &mock.GlobalSettingsHandlerStub{}
-	burnFunc, _ := NewDCTBurnFunc(10, marshaller, globalSettingsHandler, &mock.EnableEpochsHandlerStub{
+	burnFunc, _ := NewDCDTBurnFunc(10, marshaller, globalSettingsHandler, &mock.EnableEpochsHandlerStub{
 		IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
 			return flag == GlobalMintBurnFlag
 		},
@@ -111,33 +111,33 @@ func TestDCTBurn_ProcessBuiltInFunctionSenderBurns(t *testing.T) {
 			GasProvided: 50,
 			CallValue:   big.NewInt(0),
 		},
-		RecipientAddr: core.DCTSCAddress,
+		RecipientAddr: core.DCDTSCAddress,
 	}
 	key := []byte("key")
 	value := big.NewInt(10).Bytes()
 	input.Arguments = [][]byte{key, value}
 	accSnd := mock.NewUserAccount([]byte("snd"))
 
-	dctFrozen := DCTUserMetadata{Frozen: true}
-	dctNotFrozen := DCTUserMetadata{Frozen: false}
+	dcdtFrozen := DCDTUserMetadata{Frozen: true}
+	dcdtNotFrozen := DCDTUserMetadata{Frozen: false}
 
-	dctKey := append(burnFunc.keyPrefix, key...)
-	dctToken := &dct.DCToken{Value: big.NewInt(100), Properties: dctFrozen.ToBytes()}
-	marshaledData, _ := marshaller.Marshal(dctToken)
-	_ = accSnd.AccountDataHandler().SaveKeyValue(dctKey, marshaledData)
+	dcdtKey := append(burnFunc.keyPrefix, key...)
+	dcdtToken := &dcdt.DCDigitalToken{Value: big.NewInt(100), Properties: dcdtFrozen.ToBytes()}
+	marshaledData, _ := marshaller.Marshal(dcdtToken)
+	_ = accSnd.AccountDataHandler().SaveKeyValue(dcdtKey, marshaledData)
 
 	_, err := burnFunc.ProcessBuiltinFunction(accSnd, nil, input)
-	assert.Equal(t, err, ErrDCTIsFrozenForAccount)
+	assert.Equal(t, err, ErrDCDTIsFrozenForAccount)
 
 	globalSettingsHandler.IsPausedCalled = func(token []byte) bool {
 		return true
 	}
-	dctToken = &dct.DCToken{Value: big.NewInt(100), Properties: dctNotFrozen.ToBytes()}
-	marshaledData, _ = marshaller.Marshal(dctToken)
-	_ = accSnd.AccountDataHandler().SaveKeyValue(dctKey, marshaledData)
+	dcdtToken = &dcdt.DCDigitalToken{Value: big.NewInt(100), Properties: dcdtNotFrozen.ToBytes()}
+	marshaledData, _ = marshaller.Marshal(dcdtToken)
+	_ = accSnd.AccountDataHandler().SaveKeyValue(dcdtKey, marshaledData)
 
 	_, err = burnFunc.ProcessBuiltinFunction(accSnd, nil, input)
-	assert.Equal(t, err, ErrDCTTokenIsPaused)
+	assert.Equal(t, err, ErrDCDTTokenIsPaused)
 
 	globalSettingsHandler.IsPausedCalled = func(token []byte) bool {
 		return false
@@ -145,9 +145,9 @@ func TestDCTBurn_ProcessBuiltInFunctionSenderBurns(t *testing.T) {
 	_, err = burnFunc.ProcessBuiltinFunction(accSnd, nil, input)
 	assert.Nil(t, err)
 
-	marshaledData, _, _ = accSnd.AccountDataHandler().RetrieveValue(dctKey)
-	_ = marshaller.Unmarshal(dctToken, marshaledData)
-	assert.True(t, dctToken.Value.Cmp(big.NewInt(90)) == 0)
+	marshaledData, _, _ = accSnd.AccountDataHandler().RetrieveValue(dcdtKey)
+	_ = marshaller.Unmarshal(dcdtToken, marshaledData)
+	assert.True(t, dcdtToken.Value.Cmp(big.NewInt(90)) == 0)
 
 	value = big.NewInt(100).Bytes()
 	input.Arguments = [][]byte{key, value}
@@ -159,6 +159,6 @@ func TestDCTBurn_ProcessBuiltInFunctionSenderBurns(t *testing.T) {
 	_, err = burnFunc.ProcessBuiltinFunction(accSnd, nil, input)
 	assert.Nil(t, err)
 
-	marshaledData, _, _ = accSnd.AccountDataHandler().RetrieveValue(dctKey)
+	marshaledData, _, _ = accSnd.AccountDataHandler().RetrieveValue(dcdtKey)
 	assert.Equal(t, len(marshaledData), 0)
 }

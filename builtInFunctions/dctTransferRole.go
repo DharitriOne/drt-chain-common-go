@@ -6,16 +6,16 @@ import (
 
 	"github.com/DharitriOne/drt-chain-core-go/core"
 	"github.com/DharitriOne/drt-chain-core-go/core/check"
-	"github.com/DharitriOne/drt-chain-core-go/data/dct"
+	"github.com/DharitriOne/drt-chain-core-go/data/dcdt"
 	"github.com/DharitriOne/drt-chain-core-go/marshal"
 	vmcommon "github.com/DharitriOne/drt-chain-vm-common-go"
 )
 
 const transfer = "transfer"
 
-var transferAddressesKeyPrefix = []byte(core.ProtectedKeyPrefix + transfer + core.DCTKeyIdentifier)
+var transferAddressesKeyPrefix = []byte(core.ProtectedKeyPrefix + transfer + core.DCDTKeyIdentifier)
 
-type dctTransferAddress struct {
+type dcdtTransferAddress struct {
 	baseActiveHandler
 	set             bool
 	marshaller      vmcommon.Marshalizer
@@ -23,14 +23,14 @@ type dctTransferAddress struct {
 	maxNumAddresses uint32
 }
 
-// NewDCTTransferRoleAddressFunc returns the dct transfer role address handler built-in function component
-func NewDCTTransferRoleAddressFunc(
+// NewDCDTTransferRoleAddressFunc returns the dcdt transfer role address handler built-in function component
+func NewDCDTTransferRoleAddressFunc(
 	accounts vmcommon.AccountsAdapter,
 	marshaller marshal.Marshalizer,
 	maxNumAddresses uint32,
 	set bool,
 	enableEpochsHandler vmcommon.EnableEpochsHandler,
-) (*dctTransferAddress, error) {
+) (*dcdtTransferAddress, error) {
 	if check.IfNil(marshaller) {
 		return nil, ErrNilMarshalizer
 	}
@@ -44,7 +44,7 @@ func NewDCTTransferRoleAddressFunc(
 		return nil, ErrNilEnableEpochsHandler
 	}
 
-	e := &dctTransferAddress{
+	e := &dcdtTransferAddress{
 		accounts:        accounts,
 		marshaller:      marshaller,
 		maxNumAddresses: maxNumAddresses,
@@ -59,20 +59,20 @@ func NewDCTTransferRoleAddressFunc(
 }
 
 // SetNewGasConfig is called whenever gas cost is changed
-func (e *dctTransferAddress) SetNewGasConfig(_ *vmcommon.GasCost) {
+func (e *dcdtTransferAddress) SetNewGasConfig(_ *vmcommon.GasCost) {
 }
 
-// ProcessBuiltinFunction resolves DCT change roles function call
-func (e *dctTransferAddress) ProcessBuiltinFunction(
+// ProcessBuiltinFunction resolves DCDT change roles function call
+func (e *dcdtTransferAddress) ProcessBuiltinFunction(
 	_, _ vmcommon.UserAccountHandler,
 	vmInput *vmcommon.ContractCallInput,
 ) (*vmcommon.VMOutput, error) {
-	err := checkBasicDCTArguments(vmInput)
+	err := checkBasicDCDTArguments(vmInput)
 	if err != nil {
 		return nil, err
 	}
-	if !bytes.Equal(vmInput.CallerAddr, core.DCTSCAddress) {
-		return nil, ErrAddressIsNotDCTSystemSC
+	if !bytes.Equal(vmInput.CallerAddr, core.DCDTSCAddress) {
+		return nil, ErrAddressIsNotDCDTSystemSC
 	}
 	if !vmcommon.IsSystemAccountAddress(vmInput.RecipientAddr) {
 		return nil, ErrOnlySystemAccountAccepted
@@ -83,8 +83,8 @@ func (e *dctTransferAddress) ProcessBuiltinFunction(
 		return nil, err
 	}
 
-	dctTokenTransferRoleKey := append(transferAddressesKeyPrefix, vmInput.Arguments[0]...)
-	addresses, _, err := getDCTRolesForAcnt(e.marshaller, systemAcc, dctTokenTransferRoleKey)
+	dcdtTokenTransferRoleKey := append(transferAddressesKeyPrefix, vmInput.Arguments[0]...)
+	addresses, _, err := getDCDTRolesForAcnt(e.marshaller, systemAcc, dcdtTokenTransferRoleKey)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func (e *dctTransferAddress) ProcessBuiltinFunction(
 		deleteRoles(addresses, vmInput.Arguments[1:])
 	}
 
-	err = saveRolesToAccount(systemAcc, dctTokenTransferRoleKey, addresses, e.marshaller)
+	err = saveRolesToAccount(systemAcc, dcdtTokenTransferRoleKey, addresses, e.marshaller)
 	if err != nil {
 		return nil, err
 	}
@@ -111,12 +111,12 @@ func (e *dctTransferAddress) ProcessBuiltinFunction(
 	vmOutput := &vmcommon.VMOutput{ReturnCode: vmcommon.Ok}
 
 	logData := append([][]byte{systemAcc.AddressBytes()}, vmInput.Arguments[1:]...)
-	addDCTEntryInVMOutput(vmOutput, []byte(vmInput.Function), vmInput.Arguments[0], 0, big.NewInt(0), logData...)
+	addDCDTEntryInVMOutput(vmOutput, []byte(vmInput.Function), vmInput.Arguments[0], 0, big.NewInt(0), logData...)
 
 	return vmOutput, nil
 }
 
-func (e *dctTransferAddress) addNewAddresses(vmInput *vmcommon.ContractCallInput, addresses *dct.DCTRoles) error {
+func (e *dcdtTransferAddress) addNewAddresses(vmInput *vmcommon.ContractCallInput, addresses *dcdt.DCDTRoles) error {
 	for _, newAddress := range vmInput.Arguments[1:] {
 		isNew := true
 		for _, address := range addresses.Roles {
@@ -137,7 +137,7 @@ func (e *dctTransferAddress) addNewAddresses(vmInput *vmcommon.ContractCallInput
 	return nil
 }
 
-func (e *dctTransferAddress) getSystemAccount() (vmcommon.UserAccountHandler, error) {
+func (e *dcdtTransferAddress) getSystemAccount() (vmcommon.UserAccountHandler, error) {
 	systemSCAccount, err := e.accounts.LoadAccount(vmcommon.SystemAccountAddress)
 	if err != nil {
 		return nil, err
@@ -152,6 +152,6 @@ func (e *dctTransferAddress) getSystemAccount() (vmcommon.UserAccountHandler, er
 }
 
 // IsInterfaceNil returns true if underlying object in nil
-func (e *dctTransferAddress) IsInterfaceNil() bool {
+func (e *dcdtTransferAddress) IsInterfaceNil() bool {
 	return e == nil
 }

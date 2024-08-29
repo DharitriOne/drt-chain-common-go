@@ -25,8 +25,8 @@ var ErrInvalidCode = errors.New("invalid code")
 // ErrInvalidCodeMetadata signals an invalid Code Metadata
 var ErrInvalidCodeMetadata = errors.New("invalid code metadata")
 
-// ErrNotDCTTransferInput signals invalid DCT transfer input error
-var ErrNotDCTTransferInput = errors.New("not an DCT transfer input")
+// ErrNotDCDTTransferInput signals invalid DCDT transfer input error
+var ErrNotDCDTTransferInput = errors.New("not an DCDT transfer input")
 
 // ErrNotEnoughArguments signals not enough arguments error
 var ErrNotEnoughArguments = errors.New("not enough arguments")

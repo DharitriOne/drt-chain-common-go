@@ -12,26 +12,26 @@ type BaseOperationCost struct {
 
 // BuiltInCost defines cost for built-in methods
 type BuiltInCost struct {
-	ChangeOwnerAddress      uint64
-	ClaimDeveloperRewards   uint64
-	SaveUserName            uint64
-	SaveKeyValue            uint64
-	DCTTransfer             uint64
-	DCTBurn                 uint64
-	DCTLocalMint            uint64
-	DCTLocalBurn            uint64
-	DCTNFTCreate            uint64
-	DCTNFTAddQuantity       uint64
-	DCTNFTBurn              uint64
-	DCTNFTTransfer          uint64
-	DCTNFTChangeCreateOwner uint64
-	DCTNFTMultiTransfer     uint64
-	DCTNFTAddURI            uint64
-	DCTNFTUpdateAttributes  uint64
-	SetGuardian             uint64
-	GuardAccount            uint64
-	TrieLoadPerNode         uint64
-	TrieStorePerNode        uint64
+	ChangeOwnerAddress       uint64
+	ClaimDeveloperRewards    uint64
+	SaveUserName             uint64
+	SaveKeyValue             uint64
+	DCDTTransfer             uint64
+	DCDTBurn                 uint64
+	DCDTLocalMint            uint64
+	DCDTLocalBurn            uint64
+	DCDTNFTCreate            uint64
+	DCDTNFTAddQuantity       uint64
+	DCDTNFTBurn              uint64
+	DCDTNFTTransfer          uint64
+	DCDTNFTChangeCreateOwner uint64
+	DCDTNFTMultiTransfer     uint64
+	DCDTNFTAddURI            uint64
+	DCDTNFTUpdateAttributes  uint64
+	SetGuardian              uint64
+	GuardAccount             uint64
+	TrieLoadPerNode          uint64
+	TrieStorePerNode         uint64
 }
 
 // GasCost holds all the needed gas costs for system smart contracts

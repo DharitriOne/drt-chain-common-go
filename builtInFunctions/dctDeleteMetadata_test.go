@@ -7,14 +7,14 @@ import (
 	"testing"
 
 	"github.com/DharitriOne/drt-chain-core-go/core"
-	"github.com/DharitriOne/drt-chain-core-go/data/dct"
+	"github.com/DharitriOne/drt-chain-core-go/data/dcdt"
 	vmcommon "github.com/DharitriOne/drt-chain-vm-common-go"
 	"github.com/DharitriOne/drt-chain-vm-common-go/mock"
 	"github.com/stretchr/testify/assert"
 )
 
-func createMockArgsForNewDCTDelete() ArgsNewDCTDeleteMetadata {
-	return ArgsNewDCTDeleteMetadata{
+func createMockArgsForNewDCDTDelete() ArgsNewDCDTDeleteMetadata {
+	return ArgsNewDCDTDeleteMetadata{
 		FuncGasCost:    1,
 		Marshalizer:    &mock.MarshalizerMock{},
 		Accounts:       &mock.AccountsStub{},
@@ -28,49 +28,49 @@ func createMockArgsForNewDCTDelete() ArgsNewDCTDeleteMetadata {
 	}
 }
 
-func TestNewDCTDeleteMetadataFunc(t *testing.T) {
+func TestNewDCDTDeleteMetadataFunc(t *testing.T) {
 	t.Parallel()
 
 	t.Run("nil marshaller should error", func(t *testing.T) {
 		t.Parallel()
 
-		args := createMockArgsForNewDCTDelete()
+		args := createMockArgsForNewDCDTDelete()
 		args.Marshalizer = nil
-		_, err := NewDCTDeleteMetadataFunc(args)
+		_, err := NewDCDTDeleteMetadataFunc(args)
 		assert.Equal(t, err, ErrNilMarshalizer)
 	})
 	t.Run("nil accounts adapter should error", func(t *testing.T) {
 		t.Parallel()
 
-		args := createMockArgsForNewDCTDelete()
+		args := createMockArgsForNewDCDTDelete()
 		args.Accounts = nil
-		_, err := NewDCTDeleteMetadataFunc(args)
+		_, err := NewDCDTDeleteMetadataFunc(args)
 		assert.Equal(t, err, ErrNilAccountsAdapter)
 	})
 	t.Run("nil enable epochs handler should error", func(t *testing.T) {
 		t.Parallel()
 
-		args := createMockArgsForNewDCTDelete()
+		args := createMockArgsForNewDCDTDelete()
 		args.EnableEpochsHandler = nil
-		_, err := NewDCTDeleteMetadataFunc(args)
+		_, err := NewDCDTDeleteMetadataFunc(args)
 		assert.Equal(t, err, ErrNilEnableEpochsHandler)
 	})
 	t.Run("should work", func(t *testing.T) {
 		t.Parallel()
 
-		args := createMockArgsForNewDCTDelete()
-		e, err := NewDCTDeleteMetadataFunc(args)
+		args := createMockArgsForNewDCDTDelete()
+		e, err := NewDCDTDeleteMetadataFunc(args)
 		assert.Nil(t, err)
 		assert.False(t, e.IsInterfaceNil())
 		assert.True(t, e.IsActive())
 	})
 }
 
-func TestDctDeleteMetaData_ProcessBuiltinFunctionErrors(t *testing.T) {
+func TestDcdtDeleteMetaData_ProcessBuiltinFunctionErrors(t *testing.T) {
 	t.Parallel()
 
-	args := createMockArgsForNewDCTDelete()
-	e, _ := NewDCTDeleteMetadataFunc(args)
+	args := createMockArgsForNewDCDTDelete()
+	e, _ := NewDCDTDeleteMetadataFunc(args)
 
 	vmOutput, err := e.ProcessBuiltinFunction(nil, nil, nil)
 	assert.Nil(t, vmOutput)
@@ -139,30 +139,30 @@ func TestDctDeleteMetaData_ProcessBuiltinFunctionErrors(t *testing.T) {
 	assert.Nil(t, vmOutput)
 	assert.NotNil(t, err)
 
-	dctMetadata := &dct.MetaData{Name: []byte("something"), Nonce: 1}
-	marshalledData, _ := e.marshaller.Marshal(dctMetadata)
+	dcdtMetadata := &dcdt.MetaData{Name: []byte("something"), Nonce: 1}
+	marshalledData, _ := e.marshaller.Marshal(dcdtMetadata)
 	vmInput.Arguments[2] = make([]byte, len(marshalledData))
 	copy(vmInput.Arguments[2], marshalledData)
 
-	dctTokenKey := append(e.keyPrefix, vmInput.Arguments[0]...)
-	dctNftTokenKey := computeDCTNFTTokenKey(dctTokenKey, 1)
-	err = acnt.SaveKeyValue(dctNftTokenKey, []byte("t"))
+	dcdtTokenKey := append(e.keyPrefix, vmInput.Arguments[0]...)
+	dcdtNftTokenKey := computeDCDTNFTTokenKey(dcdtTokenKey, 1)
+	err = acnt.SaveKeyValue(dcdtNftTokenKey, []byte("t"))
 	assert.Nil(t, err)
 
 	vmOutput, err = e.ProcessBuiltinFunction(nil, nil, vmInput)
 	assert.Nil(t, vmOutput)
 	assert.NotNil(t, err)
 
-	dctData := &dct.DCToken{Value: big.NewInt(0), TokenMetaData: &dct.MetaData{Name: []byte("data")}}
-	marshalledData, _ = e.marshaller.Marshal(dctData)
-	err = acnt.SaveKeyValue(dctNftTokenKey, marshalledData)
+	dcdtData := &dcdt.DCDigitalToken{Value: big.NewInt(0), TokenMetaData: &dcdt.MetaData{Name: []byte("data")}}
+	marshalledData, _ = e.marshaller.Marshal(dcdtData)
+	err = acnt.SaveKeyValue(dcdtNftTokenKey, marshalledData)
 	assert.Nil(t, err)
 
 	vmOutput, err = e.ProcessBuiltinFunction(nil, nil, vmInput)
 	assert.Nil(t, vmOutput)
 	assert.Equal(t, ErrTokenHasValidMetadata, err)
 
-	_ = acnt.SaveKeyValue(dctNftTokenKey, nil)
+	_ = acnt.SaveKeyValue(dcdtNftTokenKey, nil)
 	testErr := errors.New("testError")
 	accounts.SaveAccountCalled = func(account vmcommon.AccountHandler) error {
 		return testErr
@@ -179,10 +179,10 @@ func TestDctDeleteMetaData_ProcessBuiltinFunctionErrors(t *testing.T) {
 	assert.Equal(t, testErr, err)
 }
 
-func TestDctDeleteMetaData_ProcessBuiltinFunctionGetNodeFromDbErr(t *testing.T) {
+func TestDcdtDeleteMetaData_ProcessBuiltinFunctionGetNodeFromDbErr(t *testing.T) {
 	t.Parallel()
 
-	args := createMockArgsForNewDCTDelete()
+	args := createMockArgsForNewDCDTDelete()
 	args.Delete = false
 	args.Accounts = &mock.AccountsStub{
 		LoadAccountCalled: func(address []byte) (vmcommon.AccountHandler, error) {
@@ -193,9 +193,9 @@ func TestDctDeleteMetaData_ProcessBuiltinFunctionGetNodeFromDbErr(t *testing.T) 
 			}, nil
 		},
 	}
-	dctMetadata := &dct.MetaData{Name: []byte("something"), Nonce: 1}
-	marshalledData, _ := args.Marshalizer.Marshal(dctMetadata)
-	e, _ := NewDCTDeleteMetadataFunc(args)
+	dcdtMetadata := &dcdt.MetaData{Name: []byte("something"), Nonce: 1}
+	marshalledData, _ := args.Marshalizer.Marshal(dcdtMetadata)
+	e, _ := NewDCDTDeleteMetadataFunc(args)
 	vmInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallValue:  big.NewInt(0),
@@ -210,12 +210,12 @@ func TestDctDeleteMetaData_ProcessBuiltinFunctionGetNodeFromDbErr(t *testing.T) 
 	assert.True(t, core.IsGetNodeFromDBError(err))
 }
 
-func TestDctDeleteMetaData_ProcessBuiltinFunctionAdd(t *testing.T) {
+func TestDcdtDeleteMetaData_ProcessBuiltinFunctionAdd(t *testing.T) {
 	t.Parallel()
 
-	args := createMockArgsForNewDCTDelete()
+	args := createMockArgsForNewDCDTDelete()
 	args.Delete = false
-	e, _ := NewDCTDeleteMetadataFunc(args)
+	e, _ := NewDCDTDeleteMetadataFunc(args)
 
 	vmInput := &vmcommon.ContractCallInput{VMInput: vmcommon.VMInput{CallValue: big.NewInt(0)}}
 	vmInput.CallerAddr = e.allowedAddress
@@ -223,8 +223,8 @@ func TestDctDeleteMetaData_ProcessBuiltinFunctionAdd(t *testing.T) {
 	vmInput.Arguments = [][]byte{{1}, {0}, {1}}
 	vmInput.Arguments[0] = []byte("TOKEN-ababab")
 	vmInput.Arguments[1] = []byte{1}
-	dctMetadata := &dct.MetaData{Name: []byte("something"), Nonce: 1}
-	marshalledData, _ := e.marshaller.Marshal(dctMetadata)
+	dcdtMetadata := &dcdt.MetaData{Name: []byte("something"), Nonce: 1}
+	marshalledData, _ := e.marshaller.Marshal(dcdtMetadata)
 	vmInput.Arguments[2] = make([]byte, len(marshalledData))
 	copy(vmInput.Arguments[2], marshalledData)
 
@@ -241,11 +241,11 @@ func TestDctDeleteMetaData_ProcessBuiltinFunctionAdd(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestDctDeleteMetaData_ProcessBuiltinFunctionDelete(t *testing.T) {
+func TestDcdtDeleteMetaData_ProcessBuiltinFunctionDelete(t *testing.T) {
 	t.Parallel()
 
-	args := createMockArgsForNewDCTDelete()
-	e, _ := NewDCTDeleteMetadataFunc(args)
+	args := createMockArgsForNewDCDTDelete()
+	e, _ := NewDCDTDeleteMetadataFunc(args)
 
 	vmInput := &vmcommon.ContractCallInput{VMInput: vmcommon.VMInput{CallValue: big.NewInt(0)}}
 	vmInput.CallerAddr = e.allowedAddress

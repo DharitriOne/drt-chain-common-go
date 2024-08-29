@@ -3,7 +3,7 @@ module github.com/DharitriOne/drt-chain-vm-common-go
 go 1.20
 
 require (
-	github.com/DharitriOne/drt-chain-core-go v0.0.1
+	github.com/DharitriOne/drt-chain-core-go v0.0.2
 	github.com/DharitriOne/drt-chain-logger-go v0.0.1
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/stretchr/testify v1.7.0

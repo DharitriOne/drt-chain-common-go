@@ -63,8 +63,8 @@ type VMInput struct {
 	// PrevTxHash
 	PrevTxHash []byte
 
-	// DCTTransfers
-	DCTTransfers []*DCTTransfer
+	// DCDTTransfers
+	DCDTTransfers []*DCDTTransfer
 
 	// ReturnCallAfterError
 	ReturnCallAfterError bool
@@ -83,22 +83,22 @@ type AsyncArguments struct {
 	GasAccumulated               uint64
 }
 
-// DCTTransfer defines the structure for and DCT / NFT transfer
-type DCTTransfer struct {
-	// DCTValue is the value (amount of tokens) transferred by the transaction.
+// DCDTTransfer defines the structure for and DCDT / NFT transfer
+type DCDTTransfer struct {
+	// DCDTValue is the value (amount of tokens) transferred by the transaction.
 	// Before reaching the VM this value is subtracted from sender balance (CallerAddr)
 	// and to added to the smart contract balance.
 	// It is often, but not always zero in SC calls.
-	DCTValue *big.Int
+	DCDTValue *big.Int
 
-	// DCTTokenName is the name of the token which was transferred by the transaction to the SC
-	DCTTokenName []byte
+	// DCDTTokenName is the name of the token which was transferred by the transaction to the SC
+	DCDTTokenName []byte
 
-	// DCTTokenType is the type of the transferred token
-	DCTTokenType uint32
+	// DCDTTokenType is the type of the transferred token
+	DCDTTokenType uint32
 
-	// DCTTokenNonce is the nonce for the given NFT token
-	DCTTokenNonce uint64
+	// DCDTTokenNonce is the nonce for the given NFT token
+	DCDTTokenNonce uint64
 }
 
 // ContractCreateInput VM input when creating a new contract.
@@ -132,10 +132,10 @@ type ContractCallInput struct {
 	AllowInitFunction bool
 }
 
-// ParsedDCTTransfers defines the struct for the parsed dct transfers
-type ParsedDCTTransfers struct {
-	DCTTransfers []*DCTTransfer
-	RcvAddr      []byte
-	CallFunction string
-	CallArgs     [][]byte
+// ParsedDCDTTransfers defines the struct for the parsed dcdt transfers
+type ParsedDCDTTransfers struct {
+	DCDTTransfers []*DCDTTransfer
+	RcvAddr       []byte
+	CallFunction  string
+	CallArgs      [][]byte
 }

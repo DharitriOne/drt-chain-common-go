@@ -6,154 +6,154 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDCTGlobalMetaData_ToBytesWhenPaused(t *testing.T) {
+func TestDCDTGlobalMetaData_ToBytesWhenPaused(t *testing.T) {
 	t.Parallel()
 
-	dctMetaData := &DCTGlobalMetadata{
+	dcdtMetaData := &DCDTGlobalMetadata{
 		Paused: true,
 	}
 
-	expected := make([]byte, lengthOfDCTMetadata)
+	expected := make([]byte, lengthOfDCDTMetadata)
 	expected[0] = 1
-	actual := dctMetaData.ToBytes()
+	actual := dcdtMetaData.ToBytes()
 	require.Equal(t, expected, actual)
 }
 
-func TestDCTGlobalMetaData_ToBytesWhenTransfer(t *testing.T) {
+func TestDCDTGlobalMetaData_ToBytesWhenTransfer(t *testing.T) {
 	t.Parallel()
 
-	dctMetaData := &DCTGlobalMetadata{
+	dcdtMetaData := &DCDTGlobalMetadata{
 		LimitedTransfer: true,
 	}
 
-	expected := make([]byte, lengthOfDCTMetadata)
+	expected := make([]byte, lengthOfDCDTMetadata)
 	expected[0] = 2
-	actual := dctMetaData.ToBytes()
+	actual := dcdtMetaData.ToBytes()
 	require.Equal(t, expected, actual)
 }
 
-func TestDCTGlobalMetaData_ToBytesWhenTransferAndPause(t *testing.T) {
+func TestDCDTGlobalMetaData_ToBytesWhenTransferAndPause(t *testing.T) {
 	t.Parallel()
 
-	dctMetaData := &DCTGlobalMetadata{
+	dcdtMetaData := &DCDTGlobalMetadata{
 		Paused:          true,
 		LimitedTransfer: true,
 	}
 
-	expected := make([]byte, lengthOfDCTMetadata)
+	expected := make([]byte, lengthOfDCDTMetadata)
 	expected[0] = 3
-	actual := dctMetaData.ToBytes()
+	actual := dcdtMetaData.ToBytes()
 	require.Equal(t, expected, actual)
 }
 
-func TestDCTGlobalMetaData_ToBytesWhenNotPaused(t *testing.T) {
+func TestDCDTGlobalMetaData_ToBytesWhenNotPaused(t *testing.T) {
 	t.Parallel()
 
-	dctMetaData := &DCTGlobalMetadata{
+	dcdtMetaData := &DCDTGlobalMetadata{
 		Paused: false,
 	}
 
-	expected := make([]byte, lengthOfDCTMetadata)
+	expected := make([]byte, lengthOfDCDTMetadata)
 	expected[0] = 0
-	actual := dctMetaData.ToBytes()
+	actual := dcdtMetaData.ToBytes()
 	require.Equal(t, expected, actual)
 }
 
-func TestDCTGlobalMetadataFromBytes_InvalidLength(t *testing.T) {
+func TestDCDTGlobalMetadataFromBytes_InvalidLength(t *testing.T) {
 	t.Parallel()
 
-	emptyDctGlobalMetaData := DCTGlobalMetadata{}
+	emptyDcdtGlobalMetaData := DCDTGlobalMetadata{}
 
-	invalidLengthByteSlice := make([]byte, lengthOfDCTMetadata+1)
+	invalidLengthByteSlice := make([]byte, lengthOfDCDTMetadata+1)
 
-	result := DCTGlobalMetadataFromBytes(invalidLengthByteSlice)
-	require.Equal(t, emptyDctGlobalMetaData, result)
+	result := DCDTGlobalMetadataFromBytes(invalidLengthByteSlice)
+	require.Equal(t, emptyDcdtGlobalMetaData, result)
 }
 
-func TestDCTGlobalMetadataFromBytes_ShouldSetPausedToTrue(t *testing.T) {
+func TestDCDTGlobalMetadataFromBytes_ShouldSetPausedToTrue(t *testing.T) {
 	t.Parallel()
 
-	input := make([]byte, lengthOfDCTMetadata)
+	input := make([]byte, lengthOfDCDTMetadata)
 	input[0] = 1
 
-	result := DCTGlobalMetadataFromBytes(input)
+	result := DCDTGlobalMetadataFromBytes(input)
 	require.True(t, result.Paused)
 }
 
-func TestDCTGlobalMetadataFromBytes_ShouldSetPausedToFalse(t *testing.T) {
+func TestDCDTGlobalMetadataFromBytes_ShouldSetPausedToFalse(t *testing.T) {
 	t.Parallel()
 
-	input := make([]byte, lengthOfDCTMetadata)
+	input := make([]byte, lengthOfDCDTMetadata)
 	input[0] = 0
 
-	result := DCTGlobalMetadataFromBytes(input)
+	result := DCDTGlobalMetadataFromBytes(input)
 	require.False(t, result.Paused)
 }
 
-func TestDCTUserMetaData_ToBytesWhenFrozen(t *testing.T) {
+func TestDCDTUserMetaData_ToBytesWhenFrozen(t *testing.T) {
 	t.Parallel()
 
-	dctMetaData := &DCTUserMetadata{
+	dcdtMetaData := &DCDTUserMetadata{
 		Frozen: true,
 	}
 
-	expected := make([]byte, lengthOfDCTMetadata)
+	expected := make([]byte, lengthOfDCDTMetadata)
 	expected[0] = 1
-	actual := dctMetaData.ToBytes()
+	actual := dcdtMetaData.ToBytes()
 	require.Equal(t, expected, actual)
 }
 
-func TestDCTUserMetaData_ToBytesWhenNotFrozen(t *testing.T) {
+func TestDCDTUserMetaData_ToBytesWhenNotFrozen(t *testing.T) {
 	t.Parallel()
 
-	dctMetaData := &DCTUserMetadata{
+	dcdtMetaData := &DCDTUserMetadata{
 		Frozen: false,
 	}
 
-	expected := make([]byte, lengthOfDCTMetadata)
+	expected := make([]byte, lengthOfDCDTMetadata)
 	expected[0] = 0
-	actual := dctMetaData.ToBytes()
+	actual := dcdtMetaData.ToBytes()
 	require.Equal(t, expected, actual)
 }
 
-func TestDCTUserMetadataFromBytes_InvalidLength(t *testing.T) {
+func TestDCDTUserMetadataFromBytes_InvalidLength(t *testing.T) {
 	t.Parallel()
 
-	emptyDctUserMetaData := DCTUserMetadata{}
+	emptyDcdtUserMetaData := DCDTUserMetadata{}
 
-	invalidLengthByteSlice := make([]byte, lengthOfDCTMetadata+1)
+	invalidLengthByteSlice := make([]byte, lengthOfDCDTMetadata+1)
 
-	result := DCTUserMetadataFromBytes(invalidLengthByteSlice)
-	require.Equal(t, emptyDctUserMetaData, result)
+	result := DCDTUserMetadataFromBytes(invalidLengthByteSlice)
+	require.Equal(t, emptyDcdtUserMetaData, result)
 }
 
-func TestDCTUserMetadataFromBytes_ShouldSetFrozenToTrue(t *testing.T) {
+func TestDCDTUserMetadataFromBytes_ShouldSetFrozenToTrue(t *testing.T) {
 	t.Parallel()
 
-	input := make([]byte, lengthOfDCTMetadata)
+	input := make([]byte, lengthOfDCDTMetadata)
 	input[0] = 1
 
-	result := DCTUserMetadataFromBytes(input)
+	result := DCDTUserMetadataFromBytes(input)
 	require.True(t, result.Frozen)
 }
 
-func TestDCTUserMetadataFromBytes_ShouldSetFrozenToFalse(t *testing.T) {
+func TestDCDTUserMetadataFromBytes_ShouldSetFrozenToFalse(t *testing.T) {
 	t.Parallel()
 
-	input := make([]byte, lengthOfDCTMetadata)
+	input := make([]byte, lengthOfDCDTMetadata)
 	input[0] = 0
 
-	result := DCTUserMetadataFromBytes(input)
+	result := DCDTUserMetadataFromBytes(input)
 	require.False(t, result.Frozen)
 }
 
-func TestDCTGlobalMetadata_FromBytes(t *testing.T) {
-	require.True(t, DCTGlobalMetadataFromBytes([]byte{1, 0}).Paused)
-	require.False(t, DCTGlobalMetadataFromBytes([]byte{1, 0}).LimitedTransfer)
-	require.True(t, DCTGlobalMetadataFromBytes([]byte{2, 0}).LimitedTransfer)
-	require.False(t, DCTGlobalMetadataFromBytes([]byte{2, 0}).Paused)
-	require.False(t, DCTGlobalMetadataFromBytes([]byte{0, 0}).LimitedTransfer)
-	require.False(t, DCTGlobalMetadataFromBytes([]byte{0, 0}).Paused)
-	require.True(t, DCTGlobalMetadataFromBytes([]byte{3, 0}).Paused)
-	require.True(t, DCTGlobalMetadataFromBytes([]byte{3, 0}).LimitedTransfer)
+func TestDCDTGlobalMetadata_FromBytes(t *testing.T) {
+	require.True(t, DCDTGlobalMetadataFromBytes([]byte{1, 0}).Paused)
+	require.False(t, DCDTGlobalMetadataFromBytes([]byte{1, 0}).LimitedTransfer)
+	require.True(t, DCDTGlobalMetadataFromBytes([]byte{2, 0}).LimitedTransfer)
+	require.False(t, DCDTGlobalMetadataFromBytes([]byte{2, 0}).Paused)
+	require.False(t, DCDTGlobalMetadataFromBytes([]byte{0, 0}).LimitedTransfer)
+	require.False(t, DCDTGlobalMetadataFromBytes([]byte{0, 0}).Paused)
+	require.True(t, DCDTGlobalMetadataFromBytes([]byte{3, 0}).Paused)
+	require.True(t, DCDTGlobalMetadataFromBytes([]byte{3, 0}).LimitedTransfer)
 }

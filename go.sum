@@ -1,5 +1,5 @@
-github.com/DharitriOne/drt-chain-core-go v0.0.1 h1:fg0BS+abruOKqxjw7p5BDG4/J4QETjzQp+KF8flbgM0=
-github.com/DharitriOne/drt-chain-core-go v0.0.1/go.mod h1:LyM/DkLy6WDCkhz3plyIz0z+RWeZMj11xB3RZkfJCGU=
+github.com/DharitriOne/drt-chain-core-go v0.0.2 h1:6xByZzDRiqjVY1XjwkQ3t7PqFPGDa/FnhqxNrTw+ZL4=
+github.com/DharitriOne/drt-chain-core-go v0.0.2/go.mod h1:LyM/DkLy6WDCkhz3plyIz0z+RWeZMj11xB3RZkfJCGU=
 github.com/DharitriOne/drt-chain-logger-go v0.0.1 h1:/1EV0WIFOwpS4cV75q7OML0qEC/438/jtYg8hlhaiB8=
 github.com/DharitriOne/drt-chain-logger-go v0.0.1/go.mod h1:AgRkVFaNdNZDXkeKF9Wgnr3/xD09YtKMpoiwH+D3/2U=
 github.com/DharitriOne/protobuf v0.0.1 h1:HQVXnZ+qJgE91WDBmHyfo2rViUNgg6xUewgZk3IE2Bw=

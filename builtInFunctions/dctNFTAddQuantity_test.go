@@ -7,58 +7,58 @@ import (
 
 	"github.com/DharitriOne/drt-chain-core-go/core"
 	"github.com/DharitriOne/drt-chain-core-go/core/check"
-	"github.com/DharitriOne/drt-chain-core-go/data/dct"
+	"github.com/DharitriOne/drt-chain-core-go/data/dcdt"
 	vmcommon "github.com/DharitriOne/drt-chain-vm-common-go"
 	"github.com/DharitriOne/drt-chain-vm-common-go/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewDCTNFTAddQuantityFunc(t *testing.T) {
+func TestNewDCDTNFTAddQuantityFunc(t *testing.T) {
 	t.Parallel()
 
 	t.Run("nil marshaller should error", func(t *testing.T) {
 		t.Parallel()
 
-		eqf, err := NewDCTNFTAddQuantityFunc(10, nil, nil, nil, nil)
+		eqf, err := NewDCDTNFTAddQuantityFunc(10, nil, nil, nil, nil)
 		require.True(t, check.IfNil(eqf))
-		require.Equal(t, ErrNilDCTNFTStorageHandler, err)
+		require.Equal(t, ErrNilDCDTNFTStorageHandler, err)
 	})
 	t.Run("nil global settings handler should error", func(t *testing.T) {
 		t.Parallel()
 
-		eqf, err := NewDCTNFTAddQuantityFunc(10, createNewDCTDataStorageHandler(), nil, nil, nil)
+		eqf, err := NewDCDTNFTAddQuantityFunc(10, createNewDCDTDataStorageHandler(), nil, nil, nil)
 		require.True(t, check.IfNil(eqf))
 		require.Equal(t, ErrNilGlobalSettingsHandler, err)
 	})
 	t.Run("nil roles handler should error", func(t *testing.T) {
 		t.Parallel()
 
-		eqf, err := NewDCTNFTAddQuantityFunc(10, createNewDCTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, nil, nil)
+		eqf, err := NewDCDTNFTAddQuantityFunc(10, createNewDCDTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, nil, nil)
 		require.True(t, check.IfNil(eqf))
 		require.Equal(t, ErrNilRolesHandler, err)
 	})
 	t.Run("nil enable epochs handler should error", func(t *testing.T) {
 		t.Parallel()
 
-		eqf, err := NewDCTNFTAddQuantityFunc(10, createNewDCTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{}, nil)
+		eqf, err := NewDCDTNFTAddQuantityFunc(10, createNewDCDTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{}, nil)
 		require.True(t, check.IfNil(eqf))
 		require.Equal(t, ErrNilEnableEpochsHandler, err)
 	})
 	t.Run("should work", func(t *testing.T) {
 		t.Parallel()
 
-		eqf, err := NewDCTNFTAddQuantityFunc(10, createNewDCTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{})
+		eqf, err := NewDCDTNFTAddQuantityFunc(10, createNewDCDTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{})
 		require.False(t, check.IfNil(eqf))
 		require.NoError(t, err)
 	})
 }
 
-func TestDctNFTAddQuantity_SetNewGasConfig_NilGasCost(t *testing.T) {
+func TestDcdtNFTAddQuantity_SetNewGasConfig_NilGasCost(t *testing.T) {
 	t.Parallel()
 
 	defaultGasCost := uint64(10)
-	eqf, _ := NewDCTNFTAddQuantityFunc(defaultGasCost, createNewDCTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{
+	eqf, _ := NewDCDTNFTAddQuantityFunc(defaultGasCost, createNewDCDTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{
 		IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
 			return flag == ValueLengthCheckFlag
 		},
@@ -68,12 +68,12 @@ func TestDctNFTAddQuantity_SetNewGasConfig_NilGasCost(t *testing.T) {
 	require.Equal(t, defaultGasCost, eqf.funcGasCost)
 }
 
-func TestDctNFTAddQuantity_SetNewGasConfig_ShouldWork(t *testing.T) {
+func TestDcdtNFTAddQuantity_SetNewGasConfig_ShouldWork(t *testing.T) {
 	t.Parallel()
 
 	defaultGasCost := uint64(10)
 	newGasCost := uint64(37)
-	eqf, _ := NewDCTNFTAddQuantityFunc(defaultGasCost, createNewDCTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{
+	eqf, _ := NewDCDTNFTAddQuantityFunc(defaultGasCost, createNewDCDTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{
 		IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
 			return flag == ValueLengthCheckFlag
 		},
@@ -82,7 +82,7 @@ func TestDctNFTAddQuantity_SetNewGasConfig_ShouldWork(t *testing.T) {
 	eqf.SetNewGasConfig(
 		&vmcommon.GasCost{
 			BuiltInCost: vmcommon.BuiltInCost{
-				DCTNFTAddQuantity: newGasCost,
+				DCDTNFTAddQuantity: newGasCost,
 			},
 		},
 	)
@@ -90,10 +90,10 @@ func TestDctNFTAddQuantity_SetNewGasConfig_ShouldWork(t *testing.T) {
 	require.Equal(t, newGasCost, eqf.funcGasCost)
 }
 
-func TestDctNFTAddQuantity_ProcessBuiltinFunctionErrorOnCheckDCTNFTCreateBurnAddInput(t *testing.T) {
+func TestDcdtNFTAddQuantity_ProcessBuiltinFunctionErrorOnCheckDCDTNFTCreateBurnAddInput(t *testing.T) {
 	t.Parallel()
 
-	eqf, _ := NewDCTNFTAddQuantityFunc(10, createNewDCTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{
+	eqf, _ := NewDCDTNFTAddQuantityFunc(10, createNewDCDTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{
 		IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
 			return flag == ValueLengthCheckFlag
 		},
@@ -195,10 +195,10 @@ func TestDctNFTAddQuantity_ProcessBuiltinFunctionErrorOnCheckDCTNFTCreateBurnAdd
 	require.Equal(t, ErrNotEnoughGas, err)
 }
 
-func TestDctNFTAddQuantity_ProcessBuiltinFunctionInvalidNumberOfArguments(t *testing.T) {
+func TestDcdtNFTAddQuantity_ProcessBuiltinFunctionInvalidNumberOfArguments(t *testing.T) {
 	t.Parallel()
 
-	eqf, _ := NewDCTNFTAddQuantityFunc(10, createNewDCTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{
+	eqf, _ := NewDCDTNFTAddQuantityFunc(10, createNewDCDTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{
 		IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
 			return flag == ValueLengthCheckFlag
 		},
@@ -220,16 +220,16 @@ func TestDctNFTAddQuantity_ProcessBuiltinFunctionInvalidNumberOfArguments(t *tes
 	require.Equal(t, ErrInvalidArguments, err)
 }
 
-func TestDctNFTAddQuantity_ProcessBuiltinFunctionCheckAllowedToExecuteError(t *testing.T) {
+func TestDcdtNFTAddQuantity_ProcessBuiltinFunctionCheckAllowedToExecuteError(t *testing.T) {
 	t.Parallel()
 
 	localErr := errors.New("err")
-	rolesHandler := &mock.DCTRoleHandlerStub{
+	rolesHandler := &mock.DCDTRoleHandlerStub{
 		CheckAllowedToExecuteCalled: func(_ vmcommon.UserAccountHandler, _ []byte, _ []byte) error {
 			return localErr
 		},
 	}
-	eqf, _ := NewDCTNFTAddQuantityFunc(10, createNewDCTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, rolesHandler, &mock.EnableEpochsHandlerStub{
+	eqf, _ := NewDCDTNFTAddQuantityFunc(10, createNewDCDTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, rolesHandler, &mock.EnableEpochsHandlerStub{
 		IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
 			return flag == ValueLengthCheckFlag
 		},
@@ -252,10 +252,10 @@ func TestDctNFTAddQuantity_ProcessBuiltinFunctionCheckAllowedToExecuteError(t *t
 	require.Equal(t, localErr, err)
 }
 
-func TestDctNFTAddQuantity_ProcessBuiltinFunctionNewSenderShouldErr(t *testing.T) {
+func TestDcdtNFTAddQuantity_ProcessBuiltinFunctionNewSenderShouldErr(t *testing.T) {
 	t.Parallel()
 
-	eqf, _ := NewDCTNFTAddQuantityFunc(10, createNewDCTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{
+	eqf, _ := NewDCDTNFTAddQuantityFunc(10, createNewDCDTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{
 		IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
 			return flag == ValueLengthCheckFlag
 		},
@@ -279,20 +279,20 @@ func TestDctNFTAddQuantity_ProcessBuiltinFunctionNewSenderShouldErr(t *testing.T
 	require.Equal(t, ErrNewNFTDataOnSenderAddress, err)
 }
 
-func TestDctNFTAddQuantity_ProcessBuiltinFunctionMetaDataMissing(t *testing.T) {
+func TestDcdtNFTAddQuantity_ProcessBuiltinFunctionMetaDataMissing(t *testing.T) {
 	t.Parallel()
 
 	marshaller := &mock.MarshalizerMock{}
-	eqf, _ := NewDCTNFTAddQuantityFunc(10, createNewDCTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{
+	eqf, _ := NewDCDTNFTAddQuantityFunc(10, createNewDCDTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{
 		IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
 			return flag == ValueLengthCheckFlag
 		},
 	})
 
 	userAcc := mock.NewAccountWrapMock([]byte("addr"))
-	dctData := &dct.DCToken{}
-	dctDataBytes, _ := marshaller.Marshal(dctData)
-	_ = userAcc.AccountDataHandler().SaveKeyValue([]byte(core.ProtectedKeyPrefix+core.DCTKeyIdentifier+"arg0"), dctDataBytes)
+	dcdtData := &dcdt.DCDigitalToken{}
+	dcdtDataBytes, _ := marshaller.Marshal(dcdtData)
+	_ = userAcc.AccountDataHandler().SaveKeyValue([]byte(core.ProtectedKeyPrefix+core.DCDTKeyIdentifier+"arg0"), dcdtDataBytes)
 	output, err := eqf.ProcessBuiltinFunction(
 		userAcc,
 		nil,
@@ -311,7 +311,7 @@ func TestDctNFTAddQuantity_ProcessBuiltinFunctionMetaDataMissing(t *testing.T) {
 	require.Equal(t, ErrNFTDoesNotHaveMetadata, err)
 }
 
-func TestDctNFTAddQuantity_ProcessBuiltinFunctionShouldErrOnSaveBecauseTokenIsPaused(t *testing.T) {
+func TestDcdtNFTAddQuantity_ProcessBuiltinFunctionShouldErrOnSaveBecauseTokenIsPaused(t *testing.T) {
 	t.Parallel()
 
 	marshaller := &mock.MarshalizerMock{}
@@ -321,17 +321,17 @@ func TestDctNFTAddQuantity_ProcessBuiltinFunctionShouldErrOnSaveBecauseTokenIsPa
 		},
 	}
 	enableEpochsHandler := &mock.EnableEpochsHandlerStub{}
-	eqf, _ := NewDCTNFTAddQuantityFunc(10, createNewDCTDataStorageHandlerWithArgs(globalSettingsHandler, &mock.AccountsStub{}, enableEpochsHandler), globalSettingsHandler, &mock.DCTRoleHandlerStub{}, enableEpochsHandler)
+	eqf, _ := NewDCDTNFTAddQuantityFunc(10, createNewDCDTDataStorageHandlerWithArgs(globalSettingsHandler, &mock.AccountsStub{}, enableEpochsHandler), globalSettingsHandler, &mock.DCDTRoleHandlerStub{}, enableEpochsHandler)
 
 	userAcc := mock.NewAccountWrapMock([]byte("addr"))
-	dctData := &dct.DCToken{
-		TokenMetaData: &dct.MetaData{
+	dcdtData := &dcdt.DCDigitalToken{
+		TokenMetaData: &dcdt.MetaData{
 			Name: []byte("test"),
 		},
 		Value: big.NewInt(10),
 	}
-	dctDataBytes, _ := marshaller.Marshal(dctData)
-	_ = userAcc.AccountDataHandler().SaveKeyValue([]byte(core.ProtectedKeyPrefix+core.DCTKeyIdentifier+"arg0"+"arg1"), dctDataBytes)
+	dcdtDataBytes, _ := marshaller.Marshal(dcdtData)
+	_ = userAcc.AccountDataHandler().SaveKeyValue([]byte(core.ProtectedKeyPrefix+core.DCDTKeyIdentifier+"arg0"+"arg1"), dcdtDataBytes)
 
 	output, err := eqf.ProcessBuiltinFunction(
 		userAcc,
@@ -348,14 +348,14 @@ func TestDctNFTAddQuantity_ProcessBuiltinFunctionShouldErrOnSaveBecauseTokenIsPa
 	)
 
 	require.Nil(t, output)
-	require.Equal(t, ErrDCTTokenIsPaused, err)
+	require.Equal(t, ErrDCDTTokenIsPaused, err)
 }
 
-func TestDctNFTAddQuantity_ProcessBuiltinFunctionShouldWork(t *testing.T) {
+func TestDcdtNFTAddQuantity_ProcessBuiltinFunctionShouldWork(t *testing.T) {
 	t.Parallel()
 
 	tokenIdentifier := "testTkn"
-	key := baseDCTKeyPrefix + tokenIdentifier
+	key := baseDCDTKeyPrefix + tokenIdentifier
 
 	nonce := big.NewInt(33)
 	initialValue := big.NewInt(5)
@@ -363,9 +363,9 @@ func TestDctNFTAddQuantity_ProcessBuiltinFunctionShouldWork(t *testing.T) {
 	expectedValue := big.NewInt(0).Add(initialValue, valueToAdd)
 
 	marshaller := &mock.MarshalizerMock{}
-	dctRoleHandler := &mock.DCTRoleHandlerStub{
+	dcdtRoleHandler := &mock.DCDTRoleHandlerStub{
 		CheckAllowedToExecuteCalled: func(account vmcommon.UserAccountHandler, tokenID []byte, action []byte) error {
-			assert.Equal(t, core.DCTRoleNFTAddQuantity, string(action))
+			assert.Equal(t, core.DCDTRoleNFTAddQuantity, string(action))
 			return nil
 		},
 	}
@@ -374,18 +374,18 @@ func TestDctNFTAddQuantity_ProcessBuiltinFunctionShouldWork(t *testing.T) {
 			return flag == ValueLengthCheckFlag
 		},
 	}
-	eqf, _ := NewDCTNFTAddQuantityFunc(10, createNewDCTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, dctRoleHandler, enableEpochsHandler)
+	eqf, _ := NewDCDTNFTAddQuantityFunc(10, createNewDCDTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, dcdtRoleHandler, enableEpochsHandler)
 
 	userAcc := mock.NewAccountWrapMock([]byte("addr"))
-	dctData := &dct.DCToken{
-		TokenMetaData: &dct.MetaData{
+	dcdtData := &dcdt.DCDigitalToken{
+		TokenMetaData: &dcdt.MetaData{
 			Name: []byte("test"),
 		},
 		Value: initialValue,
 	}
-	dctDataBytes, _ := marshaller.Marshal(dctData)
+	dcdtDataBytes, _ := marshaller.Marshal(dcdtData)
 	tokenKey := append([]byte(key), nonce.Bytes()...)
-	_ = userAcc.AccountDataHandler().SaveKeyValue(tokenKey, dctDataBytes)
+	_ = userAcc.AccountDataHandler().SaveKeyValue(tokenKey, dcdtDataBytes)
 
 	output, err := eqf.ProcessBuiltinFunction(
 		userAcc,
@@ -409,7 +409,7 @@ func TestDctNFTAddQuantity_ProcessBuiltinFunctionShouldWork(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, res)
 
-	finalTokenData := dct.DCToken{}
+	finalTokenData := dcdt.DCDigitalToken{}
 	_ = marshaller.Unmarshal(&finalTokenData, res)
 	require.Equal(t, expectedValue.Bytes(), finalTokenData.Value.Bytes())
 }

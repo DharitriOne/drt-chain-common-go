@@ -6,117 +6,117 @@ import (
 
 	"github.com/DharitriOne/drt-chain-core-go/core"
 	"github.com/DharitriOne/drt-chain-core-go/core/check"
-	"github.com/DharitriOne/drt-chain-core-go/data/dct"
+	"github.com/DharitriOne/drt-chain-core-go/data/dcdt"
 	vmcommon "github.com/DharitriOne/drt-chain-vm-common-go"
 )
 
-// MinArgsForDCTTransfer defines the minimum arguments needed for an dct transfer
-const MinArgsForDCTTransfer = 2
+// MinArgsForDCDTTransfer defines the minimum arguments needed for an dcdt transfer
+const MinArgsForDCDTTransfer = 2
 
-// MinArgsForDCTNFTTransfer defines the minimum arguments needed for an nft transfer
-const MinArgsForDCTNFTTransfer = 4
+// MinArgsForDCDTNFTTransfer defines the minimum arguments needed for an nft transfer
+const MinArgsForDCDTNFTTransfer = 4
 
-// MinArgsForMultiDCTNFTTransfer defines the minimum arguments needed for a multi transfer
-const MinArgsForMultiDCTNFTTransfer = 4
+// MinArgsForMultiDCDTNFTTransfer defines the minimum arguments needed for a multi transfer
+const MinArgsForMultiDCDTNFTTransfer = 4
 
 // ArgsPerTransfer defines the number of arguments per transfer in multi transfer
 const ArgsPerTransfer = 3
 
-type dctTransferParser struct {
+type dcdtTransferParser struct {
 	marshaller vmcommon.Marshalizer
 }
 
-// NewDCTTransferParser creates a new dct transfer parser
-func NewDCTTransferParser(
+// NewDCDTTransferParser creates a new dcdt transfer parser
+func NewDCDTTransferParser(
 	marshaller vmcommon.Marshalizer,
-) (*dctTransferParser, error) {
+) (*dcdtTransferParser, error) {
 	if check.IfNil(marshaller) {
 		return nil, ErrNilMarshalizer
 	}
 
-	return &dctTransferParser{marshaller: marshaller}, nil
+	return &dcdtTransferParser{marshaller: marshaller}, nil
 }
 
-// ParseDCTTransfers returns the list of dct transfers, the callFunction and callArgs from the given arguments
-func (e *dctTransferParser) ParseDCTTransfers(
+// ParseDCDTTransfers returns the list of dcdt transfers, the callFunction and callArgs from the given arguments
+func (e *dcdtTransferParser) ParseDCDTTransfers(
 	sndAddr []byte,
 	rcvAddr []byte,
 	function string,
 	args [][]byte,
-) (*vmcommon.ParsedDCTTransfers, error) {
+) (*vmcommon.ParsedDCDTTransfers, error) {
 	switch function {
-	case core.BuiltInFunctionDCTTransfer:
-		return e.parseSingleDCTTransfer(rcvAddr, args)
-	case core.BuiltInFunctionDCTNFTTransfer:
-		return e.parseSingleDCTNFTTransfer(sndAddr, rcvAddr, args)
-	case core.BuiltInFunctionMultiDCTNFTTransfer:
-		return e.parseMultiDCTNFTTransfer(rcvAddr, args)
+	case core.BuiltInFunctionDCDTTransfer:
+		return e.parseSingleDCDTTransfer(rcvAddr, args)
+	case core.BuiltInFunctionDCDTNFTTransfer:
+		return e.parseSingleDCDTNFTTransfer(sndAddr, rcvAddr, args)
+	case core.BuiltInFunctionMultiDCDTNFTTransfer:
+		return e.parseMultiDCDTNFTTransfer(rcvAddr, args)
 	default:
-		return nil, ErrNotDCTTransferInput
+		return nil, ErrNotDCDTTransferInput
 	}
 }
 
-func (e *dctTransferParser) parseSingleDCTTransfer(rcvAddr []byte, args [][]byte) (*vmcommon.ParsedDCTTransfers, error) {
-	if len(args) < MinArgsForDCTTransfer {
+func (e *dcdtTransferParser) parseSingleDCDTTransfer(rcvAddr []byte, args [][]byte) (*vmcommon.ParsedDCDTTransfers, error) {
+	if len(args) < MinArgsForDCDTTransfer {
 		return nil, ErrNotEnoughArguments
 	}
-	dctTransfers := &vmcommon.ParsedDCTTransfers{
-		DCTTransfers: make([]*vmcommon.DCTTransfer, 1),
-		RcvAddr:      rcvAddr,
-		CallArgs:     make([][]byte, 0),
-		CallFunction: "",
+	dcdtTransfers := &vmcommon.ParsedDCDTTransfers{
+		DCDTTransfers: make([]*vmcommon.DCDTTransfer, 1),
+		RcvAddr:       rcvAddr,
+		CallArgs:      make([][]byte, 0),
+		CallFunction:  "",
 	}
-	if len(args) > MinArgsForDCTTransfer {
-		dctTransfers.CallFunction = string(args[MinArgsForDCTTransfer])
+	if len(args) > MinArgsForDCDTTransfer {
+		dcdtTransfers.CallFunction = string(args[MinArgsForDCDTTransfer])
 	}
-	if len(args) > MinArgsForDCTTransfer+1 {
-		dctTransfers.CallArgs = append(dctTransfers.CallArgs, args[MinArgsForDCTTransfer+1:]...)
+	if len(args) > MinArgsForDCDTTransfer+1 {
+		dcdtTransfers.CallArgs = append(dcdtTransfers.CallArgs, args[MinArgsForDCDTTransfer+1:]...)
 	}
-	dctTransfers.DCTTransfers[0] = &vmcommon.DCTTransfer{
-		DCTValue:      big.NewInt(0).SetBytes(args[1]),
-		DCTTokenName:  args[0],
-		DCTTokenType:  uint32(core.Fungible),
-		DCTTokenNonce: 0,
+	dcdtTransfers.DCDTTransfers[0] = &vmcommon.DCDTTransfer{
+		DCDTValue:      big.NewInt(0).SetBytes(args[1]),
+		DCDTTokenName:  args[0],
+		DCDTTokenType:  uint32(core.Fungible),
+		DCDTTokenNonce: 0,
 	}
 
-	return dctTransfers, nil
+	return dcdtTransfers, nil
 }
 
-func (e *dctTransferParser) parseSingleDCTNFTTransfer(sndAddr, rcvAddr []byte, args [][]byte) (*vmcommon.ParsedDCTTransfers, error) {
-	if len(args) < MinArgsForDCTNFTTransfer {
+func (e *dcdtTransferParser) parseSingleDCDTNFTTransfer(sndAddr, rcvAddr []byte, args [][]byte) (*vmcommon.ParsedDCDTTransfers, error) {
+	if len(args) < MinArgsForDCDTNFTTransfer {
 		return nil, ErrNotEnoughArguments
 	}
-	dctTransfers := &vmcommon.ParsedDCTTransfers{
-		DCTTransfers: make([]*vmcommon.DCTTransfer, 1),
-		RcvAddr:      rcvAddr,
-		CallArgs:     make([][]byte, 0),
-		CallFunction: "",
+	dcdtTransfers := &vmcommon.ParsedDCDTTransfers{
+		DCDTTransfers: make([]*vmcommon.DCDTTransfer, 1),
+		RcvAddr:       rcvAddr,
+		CallArgs:      make([][]byte, 0),
+		CallFunction:  "",
 	}
 
 	if bytes.Equal(sndAddr, rcvAddr) {
-		dctTransfers.RcvAddr = args[3]
+		dcdtTransfers.RcvAddr = args[3]
 	}
-	if len(args) > MinArgsForDCTNFTTransfer {
-		dctTransfers.CallFunction = string(args[MinArgsForDCTNFTTransfer])
+	if len(args) > MinArgsForDCDTNFTTransfer {
+		dcdtTransfers.CallFunction = string(args[MinArgsForDCDTNFTTransfer])
 	}
-	if len(args) > MinArgsForDCTNFTTransfer+1 {
-		dctTransfers.CallArgs = append(dctTransfers.CallArgs, args[MinArgsForDCTNFTTransfer+1:]...)
+	if len(args) > MinArgsForDCDTNFTTransfer+1 {
+		dcdtTransfers.CallArgs = append(dcdtTransfers.CallArgs, args[MinArgsForDCDTNFTTransfer+1:]...)
 	}
-	dctTransfers.DCTTransfers[0] = &vmcommon.DCTTransfer{
-		DCTValue:      big.NewInt(0).SetBytes(args[2]),
-		DCTTokenName:  args[0],
-		DCTTokenType:  uint32(core.NonFungible),
-		DCTTokenNonce: big.NewInt(0).SetBytes(args[1]).Uint64(),
+	dcdtTransfers.DCDTTransfers[0] = &vmcommon.DCDTTransfer{
+		DCDTValue:      big.NewInt(0).SetBytes(args[2]),
+		DCDTTokenName:  args[0],
+		DCDTTokenType:  uint32(core.NonFungible),
+		DCDTTokenNonce: big.NewInt(0).SetBytes(args[1]).Uint64(),
 	}
 
-	return dctTransfers, nil
+	return dcdtTransfers, nil
 }
 
-func (e *dctTransferParser) parseMultiDCTNFTTransfer(rcvAddr []byte, args [][]byte) (*vmcommon.ParsedDCTTransfers, error) {
-	if len(args) < MinArgsForMultiDCTNFTTransfer {
+func (e *dcdtTransferParser) parseMultiDCDTNFTTransfer(rcvAddr []byte, args [][]byte) (*vmcommon.ParsedDCDTTransfers, error) {
+	if len(args) < MinArgsForMultiDCDTNFTTransfer {
 		return nil, ErrNotEnoughArguments
 	}
-	dctTransfers := &vmcommon.ParsedDCTTransfers{
+	dcdtTransfers := &vmcommon.ParsedDCDTTransfers{
 		RcvAddr:      rcvAddr,
 		CallArgs:     make([][]byte, 0),
 		CallFunction: "",
@@ -128,7 +128,7 @@ func (e *dctTransferParser) parseMultiDCTNFTTransfer(rcvAddr []byte, args [][]by
 
 	isFirstArgumentAnAddress := len(args[0]) == len(rcvAddr) && !numOfTransfer.IsUint64()
 	if isFirstArgumentAnAddress {
-		dctTransfers.RcvAddr = args[0]
+		dcdtTransfers.RcvAddr = args[0]
 		numOfTransfer.SetBytes(args[1])
 		startIndex = 2
 		isTxAtSender = true
@@ -140,53 +140,53 @@ func (e *dctTransferParser) parseMultiDCTNFTTransfer(rcvAddr []byte, args [][]by
 	}
 
 	if uint64(len(args)) > minLenArgs {
-		dctTransfers.CallFunction = string(args[minLenArgs])
+		dcdtTransfers.CallFunction = string(args[minLenArgs])
 	}
 	if uint64(len(args)) > minLenArgs+1 {
-		dctTransfers.CallArgs = append(dctTransfers.CallArgs, args[minLenArgs+1:]...)
+		dcdtTransfers.CallArgs = append(dcdtTransfers.CallArgs, args[minLenArgs+1:]...)
 	}
 
 	var err error
-	dctTransfers.DCTTransfers = make([]*vmcommon.DCTTransfer, numOfTransfer.Uint64())
+	dcdtTransfers.DCDTTransfers = make([]*vmcommon.DCDTTransfer, numOfTransfer.Uint64())
 	for i := uint64(0); i < numOfTransfer.Uint64(); i++ {
 		tokenStartIndex := startIndex + i*ArgsPerTransfer
-		dctTransfers.DCTTransfers[i], err = e.createNewDCTTransfer(tokenStartIndex, args, isTxAtSender)
+		dcdtTransfers.DCDTTransfers[i], err = e.createNewDCDTTransfer(tokenStartIndex, args, isTxAtSender)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return dctTransfers, nil
+	return dcdtTransfers, nil
 }
 
-func (e *dctTransferParser) createNewDCTTransfer(
+func (e *dcdtTransferParser) createNewDCDTTransfer(
 	tokenStartIndex uint64,
 	args [][]byte,
 	isTxAtSender bool,
-) (*vmcommon.DCTTransfer, error) {
-	dctTransfer := &vmcommon.DCTTransfer{
-		DCTValue:      big.NewInt(0).SetBytes(args[tokenStartIndex+2]),
-		DCTTokenName:  args[tokenStartIndex],
-		DCTTokenType:  uint32(core.Fungible),
-		DCTTokenNonce: big.NewInt(0).SetBytes(args[tokenStartIndex+1]).Uint64(),
+) (*vmcommon.DCDTTransfer, error) {
+	dcdtTransfer := &vmcommon.DCDTTransfer{
+		DCDTValue:      big.NewInt(0).SetBytes(args[tokenStartIndex+2]),
+		DCDTTokenName:  args[tokenStartIndex],
+		DCDTTokenType:  uint32(core.Fungible),
+		DCDTTokenNonce: big.NewInt(0).SetBytes(args[tokenStartIndex+1]).Uint64(),
 	}
-	if dctTransfer.DCTTokenNonce > 0 {
-		dctTransfer.DCTTokenType = uint32(core.NonFungible)
+	if dcdtTransfer.DCDTTokenNonce > 0 {
+		dcdtTransfer.DCDTTokenType = uint32(core.NonFungible)
 
 		if !isTxAtSender && len(args[tokenStartIndex+2]) > vmcommon.MaxLengthForValueToOptTransfer {
-			transferDCTData := &dct.DCToken{}
-			err := e.marshaller.Unmarshal(transferDCTData, args[tokenStartIndex+2])
+			transferDCDTData := &dcdt.DCDigitalToken{}
+			err := e.marshaller.Unmarshal(transferDCDTData, args[tokenStartIndex+2])
 			if err != nil {
 				return nil, err
 			}
-			dctTransfer.DCTValue.Set(transferDCTData.Value)
+			dcdtTransfer.DCDTValue.Set(transferDCDTData.Value)
 		}
 	}
 
-	return dctTransfer, nil
+	return dcdtTransfer, nil
 }
 
 // IsInterfaceNil returns true if underlying object is nil
-func (e *dctTransferParser) IsInterfaceNil() bool {
+func (e *dcdtTransferParser) IsInterfaceNil() bool {
 	return e == nil
 }

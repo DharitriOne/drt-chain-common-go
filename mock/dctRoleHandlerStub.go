@@ -2,13 +2,13 @@ package mock
 
 import vmcommon "github.com/DharitriOne/drt-chain-vm-common-go"
 
-// DCTRoleHandlerStub -
-type DCTRoleHandlerStub struct {
+// DCDTRoleHandlerStub -
+type DCDTRoleHandlerStub struct {
 	CheckAllowedToExecuteCalled func(account vmcommon.UserAccountHandler, tokenID []byte, action []byte) error
 }
 
 // CheckAllowedToExecute -
-func (e *DCTRoleHandlerStub) CheckAllowedToExecute(account vmcommon.UserAccountHandler, tokenID []byte, action []byte) error {
+func (e *DCDTRoleHandlerStub) CheckAllowedToExecute(account vmcommon.UserAccountHandler, tokenID []byte, action []byte) error {
 	if e.CheckAllowedToExecuteCalled != nil {
 		return e.CheckAllowedToExecuteCalled(account, tokenID, action)
 	}
@@ -17,6 +17,6 @@ func (e *DCTRoleHandlerStub) CheckAllowedToExecute(account vmcommon.UserAccountH
 }
 
 // IsInterfaceNil -
-func (e *DCTRoleHandlerStub) IsInterfaceNil() bool {
+func (e *DCDTRoleHandlerStub) IsInterfaceNil() bool {
 	return e == nil
 }

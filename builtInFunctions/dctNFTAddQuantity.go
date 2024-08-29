@@ -12,27 +12,27 @@ import (
 
 const maxLenForAddNFTQuantity = 32
 
-type dctNFTAddQuantity struct {
+type dcdtNFTAddQuantity struct {
 	baseAlwaysActiveHandler
 	keyPrefix             []byte
-	globalSettingsHandler vmcommon.DCTGlobalSettingsHandler
-	rolesHandler          vmcommon.DCTRoleHandler
-	dctStorageHandler     vmcommon.DCTNFTStorageHandler
+	globalSettingsHandler vmcommon.DCDTGlobalSettingsHandler
+	rolesHandler          vmcommon.DCDTRoleHandler
+	dcdtStorageHandler    vmcommon.DCDTNFTStorageHandler
 	enableEpochsHandler   vmcommon.EnableEpochsHandler
 	funcGasCost           uint64
 	mutExecution          sync.RWMutex
 }
 
-// NewDCTNFTAddQuantityFunc returns the dct NFT add quantity built-in function component
-func NewDCTNFTAddQuantityFunc(
+// NewDCDTNFTAddQuantityFunc returns the dcdt NFT add quantity built-in function component
+func NewDCDTNFTAddQuantityFunc(
 	funcGasCost uint64,
-	dctStorageHandler vmcommon.DCTNFTStorageHandler,
-	globalSettingsHandler vmcommon.DCTGlobalSettingsHandler,
-	rolesHandler vmcommon.DCTRoleHandler,
+	dcdtStorageHandler vmcommon.DCDTNFTStorageHandler,
+	globalSettingsHandler vmcommon.DCDTGlobalSettingsHandler,
+	rolesHandler vmcommon.DCDTRoleHandler,
 	enableEpochsHandler vmcommon.EnableEpochsHandler,
-) (*dctNFTAddQuantity, error) {
-	if check.IfNil(dctStorageHandler) {
-		return nil, ErrNilDCTNFTStorageHandler
+) (*dcdtNFTAddQuantity, error) {
+	if check.IfNil(dcdtStorageHandler) {
+		return nil, ErrNilDCDTNFTStorageHandler
 	}
 	if check.IfNil(globalSettingsHandler) {
 		return nil, ErrNilGlobalSettingsHandler
@@ -44,13 +44,13 @@ func NewDCTNFTAddQuantityFunc(
 		return nil, ErrNilEnableEpochsHandler
 	}
 
-	e := &dctNFTAddQuantity{
-		keyPrefix:             []byte(baseDCTKeyPrefix),
+	e := &dcdtNFTAddQuantity{
+		keyPrefix:             []byte(baseDCDTKeyPrefix),
 		globalSettingsHandler: globalSettingsHandler,
 		rolesHandler:          rolesHandler,
 		funcGasCost:           funcGasCost,
 		mutExecution:          sync.RWMutex{},
-		dctStorageHandler:     dctStorageHandler,
+		dcdtStorageHandler:    dcdtStorageHandler,
 		enableEpochsHandler:   enableEpochsHandler,
 	}
 
@@ -58,29 +58,29 @@ func NewDCTNFTAddQuantityFunc(
 }
 
 // SetNewGasConfig is called whenever gas cost is changed
-func (e *dctNFTAddQuantity) SetNewGasConfig(gasCost *vmcommon.GasCost) {
+func (e *dcdtNFTAddQuantity) SetNewGasConfig(gasCost *vmcommon.GasCost) {
 	if gasCost == nil {
 		return
 	}
 
 	e.mutExecution.Lock()
-	e.funcGasCost = gasCost.BuiltInCost.DCTNFTAddQuantity
+	e.funcGasCost = gasCost.BuiltInCost.DCDTNFTAddQuantity
 	e.mutExecution.Unlock()
 }
 
-// ProcessBuiltinFunction resolves DCT NFT add quantity function call
+// ProcessBuiltinFunction resolves DCDT NFT add quantity function call
 // Requires 3 arguments:
 // arg0 - token identifier
 // arg1 - nonce
 // arg2 - quantity to add
-func (e *dctNFTAddQuantity) ProcessBuiltinFunction(
+func (e *dcdtNFTAddQuantity) ProcessBuiltinFunction(
 	acntSnd, _ vmcommon.UserAccountHandler,
 	vmInput *vmcommon.ContractCallInput,
 ) (*vmcommon.VMOutput, error) {
 	e.mutExecution.RLock()
 	defer e.mutExecution.RUnlock()
 
-	err := checkDCTNFTCreateBurnAddInput(acntSnd, vmInput, e.funcGasCost)
+	err := checkDCDTNFTCreateBurnAddInput(acntSnd, vmInput, e.funcGasCost)
 	if err != nil {
 		return nil, err
 	}
@@ -88,14 +88,14 @@ func (e *dctNFTAddQuantity) ProcessBuiltinFunction(
 		return nil, ErrInvalidArguments
 	}
 
-	err = e.rolesHandler.CheckAllowedToExecute(acntSnd, vmInput.Arguments[0], []byte(core.DCTRoleNFTAddQuantity))
+	err = e.rolesHandler.CheckAllowedToExecute(acntSnd, vmInput.Arguments[0], []byte(core.DCDTRoleNFTAddQuantity))
 	if err != nil {
 		return nil, err
 	}
 
-	dctTokenKey := append(e.keyPrefix, vmInput.Arguments[0]...)
+	dcdtTokenKey := append(e.keyPrefix, vmInput.Arguments[0]...)
 	nonce := big.NewInt(0).SetBytes(vmInput.Arguments[1]).Uint64()
-	dctData, err := e.dctStorageHandler.GetDCTNFTTokenOnSender(acntSnd, dctTokenKey, nonce)
+	dcdtData, err := e.dcdtStorageHandler.GetDCDTNFTTokenOnSender(acntSnd, dcdtTokenKey, nonce)
 	if err != nil {
 		return nil, err
 	}
@@ -109,13 +109,13 @@ func (e *dctNFTAddQuantity) ProcessBuiltinFunction(
 	}
 
 	value := big.NewInt(0).SetBytes(vmInput.Arguments[2])
-	dctData.Value.Add(dctData.Value, value)
+	dcdtData.Value.Add(dcdtData.Value, value)
 
-	_, err = e.dctStorageHandler.SaveDCTNFTToken(acntSnd.AddressBytes(), acntSnd, dctTokenKey, nonce, dctData, false, vmInput.ReturnCallAfterError)
+	_, err = e.dcdtStorageHandler.SaveDCDTNFTToken(acntSnd.AddressBytes(), acntSnd, dcdtTokenKey, nonce, dcdtData, false, vmInput.ReturnCallAfterError)
 	if err != nil {
 		return nil, err
 	}
-	err = e.dctStorageHandler.AddToLiquiditySystemAcc(dctTokenKey, nonce, value)
+	err = e.dcdtStorageHandler.AddToLiquiditySystemAcc(dcdtTokenKey, nonce, value)
 	if err != nil {
 		return nil, err
 	}
@@ -125,12 +125,12 @@ func (e *dctNFTAddQuantity) ProcessBuiltinFunction(
 		GasRemaining: vmInput.GasProvided - e.funcGasCost,
 	}
 
-	addDCTEntryInVMOutput(vmOutput, []byte(core.BuiltInFunctionDCTNFTAddQuantity), vmInput.Arguments[0], nonce, value, vmInput.CallerAddr)
+	addDCDTEntryInVMOutput(vmOutput, []byte(core.BuiltInFunctionDCDTNFTAddQuantity), vmInput.Arguments[0], nonce, value, vmInput.CallerAddr)
 
 	return vmOutput, nil
 }
 
 // IsInterfaceNil returns true if underlying object in nil
-func (e *dctNFTAddQuantity) IsInterfaceNil() bool {
+func (e *dcdtNFTAddQuantity) IsInterfaceNil() bool {
 	return e == nil
 }

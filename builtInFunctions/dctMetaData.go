@@ -1,35 +1,35 @@
 package builtInFunctions
 
-const lengthOfDCTMetadata = 2
+const lengthOfDCDTMetadata = 2
 
 const (
-	// MetadataPaused is the location of paused flag in the dct global meta data
+	// MetadataPaused is the location of paused flag in the dcdt global meta data
 	MetadataPaused = 1
-	// MetadataLimitedTransfer is the location of limited transfer flag in the dct global meta data
+	// MetadataLimitedTransfer is the location of limited transfer flag in the dcdt global meta data
 	MetadataLimitedTransfer = 2
-	// BurnRoleForAll is the location of burn role for all flag in the dct global meta data
+	// BurnRoleForAll is the location of burn role for all flag in the dcdt global meta data
 	BurnRoleForAll = 4
 )
 
 const (
-	// MetadataFrozen is the location of frozen flag in the dct user meta data
+	// MetadataFrozen is the location of frozen flag in the dcdt user meta data
 	MetadataFrozen = 1
 )
 
-// DCTGlobalMetadata represents dct global metadata saved on system account
-type DCTGlobalMetadata struct {
+// DCDTGlobalMetadata represents dcdt global metadata saved on system account
+type DCDTGlobalMetadata struct {
 	Paused          bool
 	LimitedTransfer bool
 	BurnRoleForAll  bool
 }
 
-// DCTGlobalMetadataFromBytes creates a metadata object from bytes
-func DCTGlobalMetadataFromBytes(bytes []byte) DCTGlobalMetadata {
-	if len(bytes) != lengthOfDCTMetadata {
-		return DCTGlobalMetadata{}
+// DCDTGlobalMetadataFromBytes creates a metadata object from bytes
+func DCDTGlobalMetadataFromBytes(bytes []byte) DCDTGlobalMetadata {
+	if len(bytes) != lengthOfDCDTMetadata {
+		return DCDTGlobalMetadata{}
 	}
 
-	return DCTGlobalMetadata{
+	return DCDTGlobalMetadata{
 		Paused:          (bytes[0] & MetadataPaused) != 0,
 		LimitedTransfer: (bytes[0] & MetadataLimitedTransfer) != 0,
 		BurnRoleForAll:  (bytes[0] & BurnRoleForAll) != 0,
@@ -37,8 +37,8 @@ func DCTGlobalMetadataFromBytes(bytes []byte) DCTGlobalMetadata {
 }
 
 // ToBytes converts the metadata to bytes
-func (metadata *DCTGlobalMetadata) ToBytes() []byte {
-	bytes := make([]byte, lengthOfDCTMetadata)
+func (metadata *DCDTGlobalMetadata) ToBytes() []byte {
+	bytes := make([]byte, lengthOfDCDTMetadata)
 
 	if metadata.Paused {
 		bytes[0] |= MetadataPaused
@@ -53,25 +53,25 @@ func (metadata *DCTGlobalMetadata) ToBytes() []byte {
 	return bytes
 }
 
-// DCTUserMetadata represents dct user metadata saved on every account
-type DCTUserMetadata struct {
+// DCDTUserMetadata represents dcdt user metadata saved on every account
+type DCDTUserMetadata struct {
 	Frozen bool
 }
 
-// DCTUserMetadataFromBytes creates a metadata object from bytes
-func DCTUserMetadataFromBytes(bytes []byte) DCTUserMetadata {
-	if len(bytes) != lengthOfDCTMetadata {
-		return DCTUserMetadata{}
+// DCDTUserMetadataFromBytes creates a metadata object from bytes
+func DCDTUserMetadataFromBytes(bytes []byte) DCDTUserMetadata {
+	if len(bytes) != lengthOfDCDTMetadata {
+		return DCDTUserMetadata{}
 	}
 
-	return DCTUserMetadata{
+	return DCDTUserMetadata{
 		Frozen: (bytes[0] & MetadataFrozen) != 0,
 	}
 }
 
 // ToBytes converts the metadata to bytes
-func (metadata *DCTUserMetadata) ToBytes() []byte {
-	bytes := make([]byte, lengthOfDCTMetadata)
+func (metadata *DCDTUserMetadata) ToBytes() []byte {
+	bytes := make([]byte, lengthOfDCDTMetadata)
 
 	if metadata.Frozen {
 		bytes[0] |= MetadataFrozen

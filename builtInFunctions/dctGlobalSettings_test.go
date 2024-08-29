@@ -12,48 +12,48 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewDCTGlobalSettingsFunc(t *testing.T) {
+func TestNewDCDTGlobalSettingsFunc(t *testing.T) {
 	t.Parallel()
 
 	t.Run("nil accounts should error", func(t *testing.T) {
 		t.Parallel()
 
-		globalSettingsFunc, err := NewDCTGlobalSettingsFunc(nil, &mock.MarshalizerMock{}, true, core.BuiltInFunctionDCTPause, trueHandler)
+		globalSettingsFunc, err := NewDCDTGlobalSettingsFunc(nil, &mock.MarshalizerMock{}, true, core.BuiltInFunctionDCDTPause, trueHandler)
 		assert.Equal(t, ErrNilAccountsAdapter, err)
 		assert.True(t, check.IfNil(globalSettingsFunc))
 	})
 	t.Run("nil marshaller should error", func(t *testing.T) {
 		t.Parallel()
 
-		globalSettingsFunc, err := NewDCTGlobalSettingsFunc(&mock.AccountsStub{}, nil, true, core.BuiltInFunctionDCTPause, trueHandler)
+		globalSettingsFunc, err := NewDCDTGlobalSettingsFunc(&mock.AccountsStub{}, nil, true, core.BuiltInFunctionDCDTPause, trueHandler)
 		assert.Equal(t, ErrNilMarshalizer, err)
 		assert.True(t, check.IfNil(globalSettingsFunc))
 	})
 	t.Run("nil active handler should error", func(t *testing.T) {
 		t.Parallel()
 
-		globalSettingsFunc, err := NewDCTGlobalSettingsFunc(&mock.AccountsStub{}, &mock.MarshalizerMock{}, true, core.BuiltInFunctionDCTPause, nil)
+		globalSettingsFunc, err := NewDCDTGlobalSettingsFunc(&mock.AccountsStub{}, &mock.MarshalizerMock{}, true, core.BuiltInFunctionDCDTPause, nil)
 		assert.Equal(t, ErrNilActiveHandler, err)
 		assert.True(t, check.IfNil(globalSettingsFunc))
 	})
 	t.Run("should work", func(t *testing.T) {
 		t.Parallel()
 
-		globalSettingsFunc, err := NewDCTGlobalSettingsFunc(&mock.AccountsStub{}, &mock.MarshalizerMock{}, true, core.BuiltInFunctionDCTPause, falseHandler)
+		globalSettingsFunc, err := NewDCDTGlobalSettingsFunc(&mock.AccountsStub{}, &mock.MarshalizerMock{}, true, core.BuiltInFunctionDCDTPause, falseHandler)
 		assert.Nil(t, err)
 		assert.False(t, check.IfNil(globalSettingsFunc))
 	})
 }
 
-func TestDCTGlobalSettingsPause_ProcessBuiltInFunction(t *testing.T) {
+func TestDCDTGlobalSettingsPause_ProcessBuiltInFunction(t *testing.T) {
 	t.Parallel()
 
 	acnt := mock.NewUserAccount(vmcommon.SystemAccountAddress)
-	globalSettingsFunc, _ := NewDCTGlobalSettingsFunc(&mock.AccountsStub{
+	globalSettingsFunc, _ := NewDCDTGlobalSettingsFunc(&mock.AccountsStub{
 		LoadAccountCalled: func(address []byte) (vmcommon.AccountHandler, error) {
 			return acnt, nil
 		},
-	}, &mock.MarshalizerMock{}, true, core.BuiltInFunctionDCTPause, falseHandler)
+	}, &mock.MarshalizerMock{}, true, core.BuiltInFunctionDCDTPause, falseHandler)
 	_, err := globalSettingsFunc.ProcessBuiltinFunction(nil, nil, nil)
 	assert.Equal(t, err, ErrNilVmInput)
 
@@ -83,9 +83,9 @@ func TestDCTGlobalSettingsPause_ProcessBuiltInFunction(t *testing.T) {
 
 	input.Arguments = [][]byte{key}
 	_, err = globalSettingsFunc.ProcessBuiltinFunction(nil, nil, input)
-	assert.Equal(t, err, ErrAddressIsNotDCTSystemSC)
+	assert.Equal(t, err, ErrAddressIsNotDCDTSystemSC)
 
-	input.CallerAddr = core.DCTSCAddress
+	input.CallerAddr = core.DCDTSCAddress
 	_, err = globalSettingsFunc.ProcessBuiltinFunction(nil, nil, input)
 	assert.Equal(t, err, ErrOnlySystemAccountAccepted)
 
@@ -93,27 +93,27 @@ func TestDCTGlobalSettingsPause_ProcessBuiltInFunction(t *testing.T) {
 	_, err = globalSettingsFunc.ProcessBuiltinFunction(nil, nil, input)
 	assert.Nil(t, err)
 
-	pauseKey := []byte(baseDCTKeyPrefix + string(key))
+	pauseKey := []byte(baseDCDTKeyPrefix + string(key))
 	assert.True(t, globalSettingsFunc.IsPaused(pauseKey))
 	assert.False(t, globalSettingsFunc.IsLimitedTransfer(pauseKey))
 
-	dctGlobalSettingsFalse, _ := NewDCTGlobalSettingsFunc(&mock.AccountsStub{
+	dcdtGlobalSettingsFalse, _ := NewDCDTGlobalSettingsFunc(&mock.AccountsStub{
 		LoadAccountCalled: func(address []byte) (vmcommon.AccountHandler, error) {
 			return acnt, nil
 		},
-	}, &mock.MarshalizerMock{}, false, core.BuiltInFunctionDCTUnPause, falseHandler)
+	}, &mock.MarshalizerMock{}, false, core.BuiltInFunctionDCDTUnPause, falseHandler)
 
-	_, err = dctGlobalSettingsFalse.ProcessBuiltinFunction(nil, nil, input)
+	_, err = dcdtGlobalSettingsFalse.ProcessBuiltinFunction(nil, nil, input)
 	assert.Nil(t, err)
 
 	assert.False(t, globalSettingsFunc.IsPaused(pauseKey))
 	assert.False(t, globalSettingsFunc.IsLimitedTransfer(pauseKey))
 }
 
-func TestDCTGlobalSettingsPause_ProcessBuiltInFunctionGetNodeFromDbErr(t *testing.T) {
+func TestDCDTGlobalSettingsPause_ProcessBuiltInFunctionGetNodeFromDbErr(t *testing.T) {
 	t.Parallel()
 
-	globalSettingsFunc, _ := NewDCTGlobalSettingsFunc(
+	globalSettingsFunc, _ := NewDCDTGlobalSettingsFunc(
 		&mock.AccountsStub{
 			LoadAccountCalled: func(_ []byte) (vmcommon.AccountHandler, error) {
 				return &mock.AccountWrapMock{
@@ -125,7 +125,7 @@ func TestDCTGlobalSettingsPause_ProcessBuiltInFunctionGetNodeFromDbErr(t *testin
 		},
 		&mock.MarshalizerMock{},
 		true,
-		core.BuiltInFunctionDCTPause,
+		core.BuiltInFunctionDCDTPause,
 		falseHandler,
 	)
 
@@ -135,7 +135,7 @@ func TestDCTGlobalSettingsPause_ProcessBuiltInFunctionGetNodeFromDbErr(t *testin
 			GasProvided: 50,
 			CallValue:   big.NewInt(0),
 			Arguments:   [][]byte{key},
-			CallerAddr:  core.DCTSCAddress,
+			CallerAddr:  core.DCDTSCAddress,
 		},
 		RecipientAddr: vmcommon.SystemAccountAddress,
 	}
@@ -145,15 +145,15 @@ func TestDCTGlobalSettingsPause_ProcessBuiltInFunctionGetNodeFromDbErr(t *testin
 	assert.True(t, core.IsGetNodeFromDBError(err))
 }
 
-func TestDCTGlobalSettingsLimitedTransfer_ProcessBuiltInFunction(t *testing.T) {
+func TestDCDTGlobalSettingsLimitedTransfer_ProcessBuiltInFunction(t *testing.T) {
 	t.Parallel()
 
 	acnt := mock.NewUserAccount(vmcommon.SystemAccountAddress)
-	globalSettingsFunc, _ := NewDCTGlobalSettingsFunc(&mock.AccountsStub{
+	globalSettingsFunc, _ := NewDCDTGlobalSettingsFunc(&mock.AccountsStub{
 		LoadAccountCalled: func(address []byte) (vmcommon.AccountHandler, error) {
 			return acnt, nil
 		},
-	}, &mock.MarshalizerMock{}, true, core.BuiltInFunctionDCTSetLimitedTransfer, trueHandler)
+	}, &mock.MarshalizerMock{}, true, core.BuiltInFunctionDCDTSetLimitedTransfer, trueHandler)
 	_, err := globalSettingsFunc.ProcessBuiltinFunction(nil, nil, nil)
 	assert.Equal(t, err, ErrNilVmInput)
 
@@ -183,9 +183,9 @@ func TestDCTGlobalSettingsLimitedTransfer_ProcessBuiltInFunction(t *testing.T) {
 
 	input.Arguments = [][]byte{key}
 	_, err = globalSettingsFunc.ProcessBuiltinFunction(nil, nil, input)
-	assert.Equal(t, err, ErrAddressIsNotDCTSystemSC)
+	assert.Equal(t, err, ErrAddressIsNotDCDTSystemSC)
 
-	input.CallerAddr = core.DCTSCAddress
+	input.CallerAddr = core.DCDTSCAddress
 	_, err = globalSettingsFunc.ProcessBuiltinFunction(nil, nil, input)
 	assert.Equal(t, err, ErrOnlySystemAccountAccepted)
 
@@ -193,42 +193,42 @@ func TestDCTGlobalSettingsLimitedTransfer_ProcessBuiltInFunction(t *testing.T) {
 	_, err = globalSettingsFunc.ProcessBuiltinFunction(nil, nil, input)
 	assert.Nil(t, err)
 
-	tokenID := []byte(baseDCTKeyPrefix + string(key))
+	tokenID := []byte(baseDCDTKeyPrefix + string(key))
 	assert.False(t, globalSettingsFunc.IsPaused(tokenID))
 	assert.True(t, globalSettingsFunc.IsLimitedTransfer(tokenID))
 
-	pauseFunc, _ := NewDCTGlobalSettingsFunc(&mock.AccountsStub{
+	pauseFunc, _ := NewDCDTGlobalSettingsFunc(&mock.AccountsStub{
 		LoadAccountCalled: func(address []byte) (vmcommon.AccountHandler, error) {
 			return acnt, nil
 		},
-	}, &mock.MarshalizerMock{}, true, core.BuiltInFunctionDCTPause, falseHandler)
+	}, &mock.MarshalizerMock{}, true, core.BuiltInFunctionDCDTPause, falseHandler)
 
 	_, err = pauseFunc.ProcessBuiltinFunction(nil, nil, input)
 	assert.Nil(t, err)
 	assert.True(t, globalSettingsFunc.IsPaused(tokenID))
 	assert.True(t, globalSettingsFunc.IsLimitedTransfer(tokenID))
 
-	dctGlobalSettingsFalse, _ := NewDCTGlobalSettingsFunc(&mock.AccountsStub{
+	dcdtGlobalSettingsFalse, _ := NewDCDTGlobalSettingsFunc(&mock.AccountsStub{
 		LoadAccountCalled: func(address []byte) (vmcommon.AccountHandler, error) {
 			return acnt, nil
 		},
-	}, &mock.MarshalizerMock{}, false, core.BuiltInFunctionDCTUnSetLimitedTransfer, trueHandler)
+	}, &mock.MarshalizerMock{}, false, core.BuiltInFunctionDCDTUnSetLimitedTransfer, trueHandler)
 
-	_, err = dctGlobalSettingsFalse.ProcessBuiltinFunction(nil, nil, input)
+	_, err = dcdtGlobalSettingsFalse.ProcessBuiltinFunction(nil, nil, input)
 	assert.Nil(t, err)
 
 	assert.False(t, globalSettingsFunc.IsLimitedTransfer(tokenID))
 }
 
-func TestDCTGlobalSettingsBurnForAll_ProcessBuiltInFunction(t *testing.T) {
+func TestDCDTGlobalSettingsBurnForAll_ProcessBuiltInFunction(t *testing.T) {
 	t.Parallel()
 
 	acnt := mock.NewUserAccount(vmcommon.SystemAccountAddress)
-	globalSettingsFunc, _ := NewDCTGlobalSettingsFunc(&mock.AccountsStub{
+	globalSettingsFunc, _ := NewDCDTGlobalSettingsFunc(&mock.AccountsStub{
 		LoadAccountCalled: func(address []byte) (vmcommon.AccountHandler, error) {
 			return acnt, nil
 		},
-	}, &mock.MarshalizerMock{}, true, vmcommon.BuiltInFunctionDCTSetBurnRoleForAll, falseHandler)
+	}, &mock.MarshalizerMock{}, true, vmcommon.BuiltInFunctionDCDTSetBurnRoleForAll, falseHandler)
 	_, err := globalSettingsFunc.ProcessBuiltinFunction(nil, nil, nil)
 	assert.Equal(t, err, ErrNilVmInput)
 
@@ -258,9 +258,9 @@ func TestDCTGlobalSettingsBurnForAll_ProcessBuiltInFunction(t *testing.T) {
 
 	input.Arguments = [][]byte{key}
 	_, err = globalSettingsFunc.ProcessBuiltinFunction(nil, nil, input)
-	assert.Equal(t, err, ErrAddressIsNotDCTSystemSC)
+	assert.Equal(t, err, ErrAddressIsNotDCDTSystemSC)
 
-	input.CallerAddr = core.DCTSCAddress
+	input.CallerAddr = core.DCDTSCAddress
 	_, err = globalSettingsFunc.ProcessBuiltinFunction(nil, nil, input)
 	assert.Equal(t, err, ErrOnlySystemAccountAccepted)
 
@@ -268,16 +268,16 @@ func TestDCTGlobalSettingsBurnForAll_ProcessBuiltInFunction(t *testing.T) {
 	_, err = globalSettingsFunc.ProcessBuiltinFunction(nil, nil, input)
 	assert.Nil(t, err)
 
-	tokenID := []byte(baseDCTKeyPrefix + string(key))
+	tokenID := []byte(baseDCDTKeyPrefix + string(key))
 	assert.False(t, globalSettingsFunc.IsPaused(tokenID))
 	assert.False(t, globalSettingsFunc.IsLimitedTransfer(tokenID))
 	assert.True(t, globalSettingsFunc.IsBurnForAll(tokenID))
 
-	pauseFunc, _ := NewDCTGlobalSettingsFunc(&mock.AccountsStub{
+	pauseFunc, _ := NewDCDTGlobalSettingsFunc(&mock.AccountsStub{
 		LoadAccountCalled: func(address []byte) (vmcommon.AccountHandler, error) {
 			return acnt, nil
 		},
-	}, &mock.MarshalizerMock{}, true, core.BuiltInFunctionDCTPause, falseHandler)
+	}, &mock.MarshalizerMock{}, true, core.BuiltInFunctionDCDTPause, falseHandler)
 
 	_, err = pauseFunc.ProcessBuiltinFunction(nil, nil, input)
 	assert.Nil(t, err)
@@ -285,13 +285,13 @@ func TestDCTGlobalSettingsBurnForAll_ProcessBuiltInFunction(t *testing.T) {
 	assert.False(t, globalSettingsFunc.IsLimitedTransfer(tokenID))
 	assert.True(t, globalSettingsFunc.IsBurnForAll(tokenID))
 
-	dctGlobalSettingsFalse, _ := NewDCTGlobalSettingsFunc(&mock.AccountsStub{
+	dcdtGlobalSettingsFalse, _ := NewDCDTGlobalSettingsFunc(&mock.AccountsStub{
 		LoadAccountCalled: func(address []byte) (vmcommon.AccountHandler, error) {
 			return acnt, nil
 		},
-	}, &mock.MarshalizerMock{}, false, vmcommon.BuiltInFunctionDCTUnSetBurnRoleForAll, falseHandler)
+	}, &mock.MarshalizerMock{}, false, vmcommon.BuiltInFunctionDCDTUnSetBurnRoleForAll, falseHandler)
 
-	_, err = dctGlobalSettingsFalse.ProcessBuiltinFunction(nil, nil, input)
+	_, err = dcdtGlobalSettingsFalse.ProcessBuiltinFunction(nil, nil, input)
 	assert.Nil(t, err)
 
 	assert.False(t, globalSettingsFunc.IsLimitedTransfer(tokenID))

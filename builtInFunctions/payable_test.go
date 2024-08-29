@@ -142,11 +142,11 @@ func TestMustVerifyPayable(t *testing.T) {
 		assert.False(t, p1.mustVerifyPayable(vmInput, minLenArguments))
 		assert.True(t, p2.mustVerifyPayable(vmInput, minLenArguments))
 	})
-	t.Run("call type is DCTTransferAndExecute should return false", func(t *testing.T) {
+	t.Run("call type is DCDTTransferAndExecute should return false", func(t *testing.T) {
 		vmInput := &vmcommon.ContractCallInput{
 			VMInput: vmcommon.VMInput{
 				Arguments: [][]byte{[]byte("arg1"), []byte("arg2"), []byte("arg3")},
-				CallType:  vm.DCTTransferAndExecute,
+				CallType:  vm.DCDTTransferAndExecute,
 			},
 		}
 
@@ -187,12 +187,12 @@ func TestMustVerifyPayable(t *testing.T) {
 			assert.False(t, p2.mustVerifyPayable(vmInput, minLenArguments))
 		})
 	})
-	t.Run("caller is DCT address should return false", func(t *testing.T) {
+	t.Run("caller is DCDT address should return false", func(t *testing.T) {
 		vmInput := &vmcommon.ContractCallInput{
 			VMInput: vmcommon.VMInput{
 				Arguments:  [][]byte{[]byte("arg1"), []byte("arg2"), []byte("arg3")},
 				CallType:   vm.DirectCall,
-				CallerAddr: core.DCTSCAddress,
+				CallerAddr: core.DCDTSCAddress,
 			},
 		}
 

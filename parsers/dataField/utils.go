@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	dctIdentifierSeparator  = "-"
-	dctRandomSequenceLength = 6
+	dcdtIdentifierSeparator  = "-"
+	dcdtRandomSequenceLength = 6
 )
 
 // TODO refactor this part to use the built-in container for the list of all the built-in functions
@@ -22,37 +22,37 @@ func getAllBuiltInFunctions() []string {
 		core.BuiltInFunctionChangeOwnerAddress,
 		core.BuiltInFunctionSetUserName,
 		core.BuiltInFunctionSaveKeyValue,
-		core.BuiltInFunctionDCTTransfer,
-		core.BuiltInFunctionDCTBurn,
-		core.BuiltInFunctionDCTFreeze,
-		core.BuiltInFunctionDCTUnFreeze,
-		core.BuiltInFunctionDCTWipe,
-		core.BuiltInFunctionDCTPause,
-		core.BuiltInFunctionDCTUnPause,
-		core.BuiltInFunctionSetDCTRole,
-		core.BuiltInFunctionUnSetDCTRole,
-		core.BuiltInFunctionDCTSetLimitedTransfer,
-		core.BuiltInFunctionDCTUnSetLimitedTransfer,
-		core.BuiltInFunctionDCTLocalMint,
-		core.BuiltInFunctionDCTLocalBurn,
-		core.BuiltInFunctionDCTNFTTransfer,
-		core.BuiltInFunctionDCTNFTCreate,
-		core.BuiltInFunctionDCTNFTAddQuantity,
-		core.BuiltInFunctionDCTNFTCreateRoleTransfer,
-		core.BuiltInFunctionDCTNFTBurn,
-		core.BuiltInFunctionDCTNFTAddURI,
-		core.BuiltInFunctionDCTNFTUpdateAttributes,
-		core.BuiltInFunctionMultiDCTNFTTransfer,
+		core.BuiltInFunctionDCDTTransfer,
+		core.BuiltInFunctionDCDTBurn,
+		core.BuiltInFunctionDCDTFreeze,
+		core.BuiltInFunctionDCDTUnFreeze,
+		core.BuiltInFunctionDCDTWipe,
+		core.BuiltInFunctionDCDTPause,
+		core.BuiltInFunctionDCDTUnPause,
+		core.BuiltInFunctionSetDCDTRole,
+		core.BuiltInFunctionUnSetDCDTRole,
+		core.BuiltInFunctionDCDTSetLimitedTransfer,
+		core.BuiltInFunctionDCDTUnSetLimitedTransfer,
+		core.BuiltInFunctionDCDTLocalMint,
+		core.BuiltInFunctionDCDTLocalBurn,
+		core.BuiltInFunctionDCDTNFTTransfer,
+		core.BuiltInFunctionDCDTNFTCreate,
+		core.BuiltInFunctionDCDTNFTAddQuantity,
+		core.BuiltInFunctionDCDTNFTCreateRoleTransfer,
+		core.BuiltInFunctionDCDTNFTBurn,
+		core.BuiltInFunctionDCDTNFTAddURI,
+		core.BuiltInFunctionDCDTNFTUpdateAttributes,
+		core.BuiltInFunctionMultiDCDTNFTTransfer,
 		core.BuiltInFunctionMigrateDataTrie,
-		core.DCTRoleLocalMint,
-		core.DCTRoleLocalBurn,
-		core.DCTRoleNFTCreate,
-		core.DCTRoleNFTCreateMultiShard,
-		core.DCTRoleNFTAddQuantity,
-		core.DCTRoleNFTBurn,
-		core.DCTRoleNFTAddURI,
-		core.DCTRoleNFTUpdateAttributes,
-		core.DCTRoleTransfer,
+		core.DCDTRoleLocalMint,
+		core.DCDTRoleLocalBurn,
+		core.DCDTRoleNFTCreate,
+		core.DCDTRoleNFTCreateMultiShard,
+		core.DCDTRoleNFTAddQuantity,
+		core.DCDTRoleNFTBurn,
+		core.DCDTRoleNFTAddURI,
+		core.DCDTRoleNFTUpdateAttributes,
+		core.DCDTRoleTransfer,
 		core.BuiltInFunctionSetGuardian,
 		core.BuiltInFunctionUnGuardAccount,
 		core.BuiltInFunctionGuardAccount,
@@ -80,17 +80,17 @@ func computeTokenIdentifier(token string, nonce uint64) string {
 }
 
 func extractTokenAndNonce(arg []byte) (string, uint64) {
-	argsSplit := bytes.Split(arg, []byte(dctIdentifierSeparator))
+	argsSplit := bytes.Split(arg, []byte(dcdtIdentifierSeparator))
 	if len(argsSplit) < 2 {
 		return string(arg), 0
 	}
 
-	if len(argsSplit[1]) <= dctRandomSequenceLength {
+	if len(argsSplit[1]) <= dcdtRandomSequenceLength {
 		return string(arg), 0
 	}
 
-	identifier := []byte(fmt.Sprintf("%s-%s", argsSplit[0], argsSplit[1][:dctRandomSequenceLength]))
-	nonce := big.NewInt(0).SetBytes(argsSplit[1][dctRandomSequenceLength:])
+	identifier := []byte(fmt.Sprintf("%s-%s", argsSplit[0], argsSplit[1][:dcdtRandomSequenceLength]))
+	nonce := big.NewInt(0).SetBytes(argsSplit[1][dcdtRandomSequenceLength:])
 
 	return string(identifier), nonce.Uint64()
 }

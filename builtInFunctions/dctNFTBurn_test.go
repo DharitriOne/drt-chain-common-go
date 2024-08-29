@@ -7,58 +7,58 @@ import (
 
 	"github.com/DharitriOne/drt-chain-core-go/core"
 	"github.com/DharitriOne/drt-chain-core-go/core/check"
-	"github.com/DharitriOne/drt-chain-core-go/data/dct"
+	"github.com/DharitriOne/drt-chain-core-go/data/dcdt"
 	vmcommon "github.com/DharitriOne/drt-chain-vm-common-go"
 	"github.com/DharitriOne/drt-chain-vm-common-go/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewDCTNFTBurnFunc(t *testing.T) {
+func TestNewDCDTNFTBurnFunc(t *testing.T) {
 	t.Parallel()
 
 	// nil marshaller
-	ebf, err := NewDCTNFTBurnFunc(10, nil, nil, nil)
+	ebf, err := NewDCDTNFTBurnFunc(10, nil, nil, nil)
 	require.True(t, check.IfNil(ebf))
-	require.Equal(t, ErrNilDCTNFTStorageHandler, err)
+	require.Equal(t, ErrNilDCDTNFTStorageHandler, err)
 
 	// nil pause handler
-	ebf, err = NewDCTNFTBurnFunc(10, createNewDCTDataStorageHandler(), nil, nil)
+	ebf, err = NewDCDTNFTBurnFunc(10, createNewDCDTDataStorageHandler(), nil, nil)
 	require.True(t, check.IfNil(ebf))
 	require.Equal(t, ErrNilGlobalSettingsHandler, err)
 
 	// nil roles handler
-	ebf, err = NewDCTNFTBurnFunc(10, createNewDCTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, nil)
+	ebf, err = NewDCDTNFTBurnFunc(10, createNewDCDTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, nil)
 	require.True(t, check.IfNil(ebf))
 	require.Equal(t, ErrNilRolesHandler, err)
 
 	// should work
-	ebf, err = NewDCTNFTBurnFunc(10, createNewDCTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{})
+	ebf, err = NewDCDTNFTBurnFunc(10, createNewDCDTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{})
 	require.False(t, check.IfNil(ebf))
 	require.NoError(t, err)
 }
 
-func TestDCTNFTBurn_SetNewGasConfig_NilGasCost(t *testing.T) {
+func TestDCDTNFTBurn_SetNewGasConfig_NilGasCost(t *testing.T) {
 	t.Parallel()
 
 	defaultGasCost := uint64(10)
-	ebf, _ := NewDCTNFTBurnFunc(defaultGasCost, createNewDCTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{})
+	ebf, _ := NewDCDTNFTBurnFunc(defaultGasCost, createNewDCDTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{})
 
 	ebf.SetNewGasConfig(nil)
 	require.Equal(t, defaultGasCost, ebf.funcGasCost)
 }
 
-func TestDctNFTBurnFunc_SetNewGasConfig_ShouldWork(t *testing.T) {
+func TestDcdtNFTBurnFunc_SetNewGasConfig_ShouldWork(t *testing.T) {
 	t.Parallel()
 
 	defaultGasCost := uint64(10)
 	newGasCost := uint64(37)
-	ebf, _ := NewDCTNFTBurnFunc(defaultGasCost, createNewDCTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{})
+	ebf, _ := NewDCDTNFTBurnFunc(defaultGasCost, createNewDCDTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{})
 
 	ebf.SetNewGasConfig(
 		&vmcommon.GasCost{
 			BuiltInCost: vmcommon.BuiltInCost{
-				DCTNFTBurn: newGasCost,
+				DCDTNFTBurn: newGasCost,
 			},
 		},
 	)
@@ -66,10 +66,10 @@ func TestDctNFTBurnFunc_SetNewGasConfig_ShouldWork(t *testing.T) {
 	require.Equal(t, newGasCost, ebf.funcGasCost)
 }
 
-func TestDctNFTBurnFunc_ProcessBuiltinFunctionErrorOnCheckDCTNFTCreateBurnAddInput(t *testing.T) {
+func TestDcdtNFTBurnFunc_ProcessBuiltinFunctionErrorOnCheckDCDTNFTCreateBurnAddInput(t *testing.T) {
 	t.Parallel()
 
-	ebf, _ := NewDCTNFTBurnFunc(10, createNewDCTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{})
+	ebf, _ := NewDCDTNFTBurnFunc(10, createNewDCDTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{})
 
 	// nil vm input
 	output, err := ebf.ProcessBuiltinFunction(mock.NewAccountWrapMock([]byte("addr")), nil, nil)
@@ -167,10 +167,10 @@ func TestDctNFTBurnFunc_ProcessBuiltinFunctionErrorOnCheckDCTNFTCreateBurnAddInp
 	require.Equal(t, ErrNotEnoughGas, err)
 }
 
-func TestDctNFTBurnFunc_ProcessBuiltinFunctionInvalidNumberOfArguments(t *testing.T) {
+func TestDcdtNFTBurnFunc_ProcessBuiltinFunctionInvalidNumberOfArguments(t *testing.T) {
 	t.Parallel()
 
-	ebf, _ := NewDCTNFTBurnFunc(10, createNewDCTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{})
+	ebf, _ := NewDCDTNFTBurnFunc(10, createNewDCDTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{})
 	output, err := ebf.ProcessBuiltinFunction(
 		mock.NewAccountWrapMock([]byte("addr")),
 		nil,
@@ -188,16 +188,16 @@ func TestDctNFTBurnFunc_ProcessBuiltinFunctionInvalidNumberOfArguments(t *testin
 	require.Equal(t, ErrInvalidArguments, err)
 }
 
-func TestDctNFTBurnFunc_ProcessBuiltinFunctionCheckAllowedToExecuteError(t *testing.T) {
+func TestDcdtNFTBurnFunc_ProcessBuiltinFunctionCheckAllowedToExecuteError(t *testing.T) {
 	t.Parallel()
 
 	localErr := errors.New("err")
-	rolesHandler := &mock.DCTRoleHandlerStub{
+	rolesHandler := &mock.DCDTRoleHandlerStub{
 		CheckAllowedToExecuteCalled: func(_ vmcommon.UserAccountHandler, _ []byte, _ []byte) error {
 			return localErr
 		},
 	}
-	ebf, _ := NewDCTNFTBurnFunc(10, createNewDCTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, rolesHandler)
+	ebf, _ := NewDCDTNFTBurnFunc(10, createNewDCDTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, rolesHandler)
 	output, err := ebf.ProcessBuiltinFunction(
 		mock.NewAccountWrapMock([]byte("addr")),
 		nil,
@@ -216,10 +216,10 @@ func TestDctNFTBurnFunc_ProcessBuiltinFunctionCheckAllowedToExecuteError(t *test
 	require.Equal(t, localErr, err)
 }
 
-func TestDctNFTBurnFunc_ProcessBuiltinFunctionNewSenderShouldErr(t *testing.T) {
+func TestDcdtNFTBurnFunc_ProcessBuiltinFunctionNewSenderShouldErr(t *testing.T) {
 	t.Parallel()
 
-	ebf, _ := NewDCTNFTBurnFunc(10, createNewDCTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{})
+	ebf, _ := NewDCDTNFTBurnFunc(10, createNewDCDTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{})
 	output, err := ebf.ProcessBuiltinFunction(
 		mock.NewAccountWrapMock([]byte("addr")),
 		nil,
@@ -239,16 +239,16 @@ func TestDctNFTBurnFunc_ProcessBuiltinFunctionNewSenderShouldErr(t *testing.T) {
 	require.Equal(t, ErrNewNFTDataOnSenderAddress, err)
 }
 
-func TestDctNFTBurnFunc_ProcessBuiltinFunctionMetaDataMissing(t *testing.T) {
+func TestDcdtNFTBurnFunc_ProcessBuiltinFunctionMetaDataMissing(t *testing.T) {
 	t.Parallel()
 
 	marshaller := &mock.MarshalizerMock{}
-	ebf, _ := NewDCTNFTBurnFunc(10, createNewDCTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{})
+	ebf, _ := NewDCDTNFTBurnFunc(10, createNewDCDTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{})
 
 	userAcc := mock.NewAccountWrapMock([]byte("addr"))
-	dctData := &dct.DCToken{}
-	dctDataBytes, _ := marshaller.Marshal(dctData)
-	_ = userAcc.AccountDataHandler().SaveKeyValue([]byte(core.ProtectedKeyPrefix+core.DCTKeyIdentifier+"arg0"), dctDataBytes)
+	dcdtData := &dcdt.DCDigitalToken{}
+	dcdtDataBytes, _ := marshaller.Marshal(dcdtData)
+	_ = userAcc.AccountDataHandler().SaveKeyValue([]byte(core.ProtectedKeyPrefix+core.DCDTKeyIdentifier+"arg0"), dcdtDataBytes)
 	output, err := ebf.ProcessBuiltinFunction(
 		userAcc,
 		nil,
@@ -267,7 +267,7 @@ func TestDctNFTBurnFunc_ProcessBuiltinFunctionMetaDataMissing(t *testing.T) {
 	require.Equal(t, ErrNFTDoesNotHaveMetadata, err)
 }
 
-func TestDctNFTBurnFunc_ProcessBuiltinFunctionInvalidBurnQuantity(t *testing.T) {
+func TestDcdtNFTBurnFunc_ProcessBuiltinFunctionInvalidBurnQuantity(t *testing.T) {
 	t.Parallel()
 
 	initialQuantity := big.NewInt(55)
@@ -275,17 +275,17 @@ func TestDctNFTBurnFunc_ProcessBuiltinFunctionInvalidBurnQuantity(t *testing.T) 
 
 	marshaller := &mock.MarshalizerMock{}
 
-	ebf, _ := NewDCTNFTBurnFunc(10, createNewDCTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{})
+	ebf, _ := NewDCDTNFTBurnFunc(10, createNewDCDTDataStorageHandler(), &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{})
 
 	userAcc := mock.NewAccountWrapMock([]byte("addr"))
-	dctData := &dct.DCToken{
-		TokenMetaData: &dct.MetaData{
+	dcdtData := &dcdt.DCDigitalToken{
+		TokenMetaData: &dcdt.MetaData{
 			Name: []byte("test"),
 		},
 		Value: initialQuantity,
 	}
-	dctDataBytes, _ := marshaller.Marshal(dctData)
-	_ = userAcc.AccountDataHandler().SaveKeyValue([]byte(core.ProtectedKeyPrefix+core.DCTKeyIdentifier+"arg0"+"arg1"), dctDataBytes)
+	dcdtDataBytes, _ := marshaller.Marshal(dcdtData)
+	_ = userAcc.AccountDataHandler().SaveKeyValue([]byte(core.ProtectedKeyPrefix+core.DCDTKeyIdentifier+"arg0"+"arg1"), dcdtDataBytes)
 	output, err := ebf.ProcessBuiltinFunction(
 		userAcc,
 		nil,
@@ -304,7 +304,7 @@ func TestDctNFTBurnFunc_ProcessBuiltinFunctionInvalidBurnQuantity(t *testing.T) 
 	require.Equal(t, ErrInvalidNFTQuantity, err)
 }
 
-func TestDctNFTBurnFunc_ProcessBuiltinFunctionShouldErrOnSaveBecauseTokenIsPaused(t *testing.T) {
+func TestDcdtNFTBurnFunc_ProcessBuiltinFunctionShouldErrOnSaveBecauseTokenIsPaused(t *testing.T) {
 	t.Parallel()
 
 	marshaller := &mock.MarshalizerMock{}
@@ -314,17 +314,17 @@ func TestDctNFTBurnFunc_ProcessBuiltinFunctionShouldErrOnSaveBecauseTokenIsPause
 		},
 	}
 
-	ebf, _ := NewDCTNFTBurnFunc(10, createNewDCTDataStorageHandlerWithArgs(globalSettingsHandler, &mock.AccountsStub{}, &mock.EnableEpochsHandlerStub{}), globalSettingsHandler, &mock.DCTRoleHandlerStub{})
+	ebf, _ := NewDCDTNFTBurnFunc(10, createNewDCDTDataStorageHandlerWithArgs(globalSettingsHandler, &mock.AccountsStub{}, &mock.EnableEpochsHandlerStub{}), globalSettingsHandler, &mock.DCDTRoleHandlerStub{})
 
 	userAcc := mock.NewAccountWrapMock([]byte("addr"))
-	dctData := &dct.DCToken{
-		TokenMetaData: &dct.MetaData{
+	dcdtData := &dcdt.DCDigitalToken{
+		TokenMetaData: &dcdt.MetaData{
 			Name: []byte("test"),
 		},
 		Value: big.NewInt(10),
 	}
-	dctDataBytes, _ := marshaller.Marshal(dctData)
-	_ = userAcc.AccountDataHandler().SaveKeyValue([]byte(core.ProtectedKeyPrefix+core.DCTKeyIdentifier+"arg0"+"arg1"), dctDataBytes)
+	dcdtDataBytes, _ := marshaller.Marshal(dcdtData)
+	_ = userAcc.AccountDataHandler().SaveKeyValue([]byte(core.ProtectedKeyPrefix+core.DCDTKeyIdentifier+"arg0"+"arg1"), dcdtDataBytes)
 	output, err := ebf.ProcessBuiltinFunction(
 		userAcc,
 		nil,
@@ -340,14 +340,14 @@ func TestDctNFTBurnFunc_ProcessBuiltinFunctionShouldErrOnSaveBecauseTokenIsPause
 	)
 
 	require.Nil(t, output)
-	require.Equal(t, ErrDCTTokenIsPaused, err)
+	require.Equal(t, ErrDCDTTokenIsPaused, err)
 }
 
-func TestDctNFTBurnFunc_ProcessBuiltinFunctionShouldWork(t *testing.T) {
+func TestDcdtNFTBurnFunc_ProcessBuiltinFunctionShouldWork(t *testing.T) {
 	t.Parallel()
 
 	tokenIdentifier := "testTkn"
-	key := baseDCTKeyPrefix + tokenIdentifier
+	key := baseDCDTKeyPrefix + tokenIdentifier
 
 	nonce := big.NewInt(33)
 	initialQuantity := big.NewInt(100)
@@ -355,27 +355,27 @@ func TestDctNFTBurnFunc_ProcessBuiltinFunctionShouldWork(t *testing.T) {
 	expectedQuantity := big.NewInt(0).Sub(initialQuantity, quantityToBurn)
 
 	marshaller := &mock.MarshalizerMock{}
-	dctRoleHandler := &mock.DCTRoleHandlerStub{
+	dcdtRoleHandler := &mock.DCDTRoleHandlerStub{
 		CheckAllowedToExecuteCalled: func(account vmcommon.UserAccountHandler, tokenID []byte, action []byte) error {
-			assert.Equal(t, core.DCTRoleNFTBurn, string(action))
+			assert.Equal(t, core.DCDTRoleNFTBurn, string(action))
 			return nil
 		},
 	}
-	storageHandler := createNewDCTDataStorageHandler()
-	ebf, _ := NewDCTNFTBurnFunc(10, storageHandler, &mock.GlobalSettingsHandlerStub{}, dctRoleHandler)
+	storageHandler := createNewDCDTDataStorageHandler()
+	ebf, _ := NewDCDTNFTBurnFunc(10, storageHandler, &mock.GlobalSettingsHandlerStub{}, dcdtRoleHandler)
 
 	userAcc := mock.NewAccountWrapMock([]byte("addr"))
-	dctData := &dct.DCToken{
-		TokenMetaData: &dct.MetaData{
+	dcdtData := &dcdt.DCDigitalToken{
+		TokenMetaData: &dcdt.MetaData{
 			Name: []byte("test"),
 		},
 		Value: initialQuantity,
 	}
-	dctDataBytes, _ := marshaller.Marshal(dctData)
+	dcdtDataBytes, _ := marshaller.Marshal(dcdtData)
 	nftTokenKey := append([]byte(key), nonce.Bytes()...)
-	_ = userAcc.AccountDataHandler().SaveKeyValue(nftTokenKey, dctDataBytes)
+	_ = userAcc.AccountDataHandler().SaveKeyValue(nftTokenKey, dcdtDataBytes)
 
-	_ = storageHandler.saveDCTMetaDataToSystemAccount(userAcc, 0, nftTokenKey, nonce.Uint64(), dctData, true)
+	_ = storageHandler.saveDCDTMetaDataToSystemAccount(userAcc, 0, nftTokenKey, nonce.Uint64(), dcdtData, true)
 	_ = storageHandler.AddToLiquiditySystemAcc([]byte(key), nonce.Uint64(), initialQuantity)
 	output, err := ebf.ProcessBuiltinFunction(
 		userAcc,
@@ -399,16 +399,16 @@ func TestDctNFTBurnFunc_ProcessBuiltinFunctionShouldWork(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, res)
 
-	finalTokenData := dct.DCToken{}
+	finalTokenData := dcdt.DCDigitalToken{}
 	_ = marshaller.Unmarshal(&finalTokenData, res)
 	require.Equal(t, expectedQuantity.Bytes(), finalTokenData.Value.Bytes())
 }
 
-func TestDctNFTBurnFunc_ProcessBuiltinFunctionWithGlobalBurn(t *testing.T) {
+func TestDcdtNFTBurnFunc_ProcessBuiltinFunctionWithGlobalBurn(t *testing.T) {
 	t.Parallel()
 
 	tokenIdentifier := "testTkn"
-	key := baseDCTKeyPrefix + tokenIdentifier
+	key := baseDCDTKeyPrefix + tokenIdentifier
 
 	nonce := big.NewInt(33)
 	initialQuantity := big.NewInt(100)
@@ -416,28 +416,28 @@ func TestDctNFTBurnFunc_ProcessBuiltinFunctionWithGlobalBurn(t *testing.T) {
 	expectedQuantity := big.NewInt(0).Sub(initialQuantity, quantityToBurn)
 
 	marshaller := &mock.MarshalizerMock{}
-	storageHandler := createNewDCTDataStorageHandler()
-	ebf, _ := NewDCTNFTBurnFunc(10, storageHandler, &mock.GlobalSettingsHandlerStub{
+	storageHandler := createNewDCDTDataStorageHandler()
+	ebf, _ := NewDCDTNFTBurnFunc(10, storageHandler, &mock.GlobalSettingsHandlerStub{
 		IsBurnForAllCalled: func(token []byte) bool {
 			return true
 		},
-	}, &mock.DCTRoleHandlerStub{
+	}, &mock.DCDTRoleHandlerStub{
 		CheckAllowedToExecuteCalled: func(account vmcommon.UserAccountHandler, tokenID []byte, action []byte) error {
 			return errors.New("no burn allowed")
 		},
 	})
 
 	userAcc := mock.NewAccountWrapMock([]byte("addr"))
-	dctData := &dct.DCToken{
-		TokenMetaData: &dct.MetaData{
+	dcdtData := &dcdt.DCDigitalToken{
+		TokenMetaData: &dcdt.MetaData{
 			Name: []byte("test"),
 		},
 		Value: initialQuantity,
 	}
-	dctDataBytes, _ := marshaller.Marshal(dctData)
+	dcdtDataBytes, _ := marshaller.Marshal(dcdtData)
 	tokenKey := append([]byte(key), nonce.Bytes()...)
-	_ = userAcc.AccountDataHandler().SaveKeyValue(tokenKey, dctDataBytes)
-	_ = storageHandler.saveDCTMetaDataToSystemAccount(userAcc, 0, tokenKey, nonce.Uint64(), dctData, true)
+	_ = userAcc.AccountDataHandler().SaveKeyValue(tokenKey, dcdtDataBytes)
+	_ = storageHandler.saveDCDTMetaDataToSystemAccount(userAcc, 0, tokenKey, nonce.Uint64(), dcdtData, true)
 	_ = storageHandler.AddToLiquiditySystemAcc([]byte(key), nonce.Uint64(), initialQuantity)
 
 	output, err := ebf.ProcessBuiltinFunction(
@@ -462,7 +462,7 @@ func TestDctNFTBurnFunc_ProcessBuiltinFunctionWithGlobalBurn(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, res)
 
-	finalTokenData := dct.DCToken{}
+	finalTokenData := dcdt.DCDigitalToken{}
 	_ = marshaller.Unmarshal(&finalTokenData, res)
 	require.Equal(t, expectedQuantity.Bytes(), finalTokenData.Value.Bytes())
 }

@@ -12,26 +12,26 @@ const additionalRandomCharsLength = 6
 const identifierMinLength = tickerMinLength + additionalRandomCharsLength + 1
 const identifierMaxLength = tickerMaxLength + additionalRandomCharsLength + 1
 
-// DCTDeleteMetadata represents the defined built in function name for dct delete metadata
-const DCTDeleteMetadata = "DCTDeleteMetadata"
+// DCDTDeleteMetadata represents the defined built in function name for dcdt delete metadata
+const DCDTDeleteMetadata = "DCDTDeleteMetadata"
 
-// DCTAddMetadata represents the defined built in function name for dct add metadata
-const DCTAddMetadata = "DCTAddMetadata"
+// DCDTAddMetadata represents the defined built in function name for dcdt add metadata
+const DCDTAddMetadata = "DCDTAddMetadata"
 
-// BuiltInFunctionDCTSetBurnRoleForAll represents the defined built in function name for dct set burn role for all
-const BuiltInFunctionDCTSetBurnRoleForAll = "DCTSetBurnRoleForAll"
+// BuiltInFunctionDCDTSetBurnRoleForAll represents the defined built in function name for dcdt set burn role for all
+const BuiltInFunctionDCDTSetBurnRoleForAll = "DCDTSetBurnRoleForAll"
 
-// BuiltInFunctionDCTUnSetBurnRoleForAll represents the defined built in function name for dct unset burn role for all
-const BuiltInFunctionDCTUnSetBurnRoleForAll = "DCTUnSetBurnRoleForAll"
+// BuiltInFunctionDCDTUnSetBurnRoleForAll represents the defined built in function name for dcdt unset burn role for all
+const BuiltInFunctionDCDTUnSetBurnRoleForAll = "DCDTUnSetBurnRoleForAll"
 
-// BuiltInFunctionDCTTransferRoleAddAddress represents the defined built in function name for dct transfer role add address
-const BuiltInFunctionDCTTransferRoleAddAddress = "DCTTransferRoleAddAddress"
+// BuiltInFunctionDCDTTransferRoleAddAddress represents the defined built in function name for dcdt transfer role add address
+const BuiltInFunctionDCDTTransferRoleAddAddress = "DCDTTransferRoleAddAddress"
 
-// BuiltInFunctionDCTTransferRoleDeleteAddress represents the defined built in function name for transfer role delete address
-const BuiltInFunctionDCTTransferRoleDeleteAddress = "DCTTransferRoleDeleteAddress"
+// BuiltInFunctionDCDTTransferRoleDeleteAddress represents the defined built in function name for transfer role delete address
+const BuiltInFunctionDCDTTransferRoleDeleteAddress = "DCDTTransferRoleDeleteAddress"
 
-// DCTRoleBurnForAll represents the role for burn for all
-const DCTRoleBurnForAll = "DCTRoleBurnForAll"
+// DCDTRoleBurnForAll represents the role for burn for all
+const DCDTRoleBurnForAll = "DCDTRoleBurnForAll"
 
 // ValidateToken - validates the token ID
 func ValidateToken(tokenID []byte) bool {

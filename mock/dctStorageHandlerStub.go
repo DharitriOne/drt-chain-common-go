@@ -4,55 +4,55 @@ import (
 	"math/big"
 
 	"github.com/DharitriOne/drt-chain-core-go/data"
-	"github.com/DharitriOne/drt-chain-core-go/data/dct"
+	"github.com/DharitriOne/drt-chain-core-go/data/dcdt"
 	vmcommon "github.com/DharitriOne/drt-chain-vm-common-go"
 )
 
-// DCTNFTStorageHandlerStub -
-type DCTNFTStorageHandlerStub struct {
-	SaveDCTNFTTokenCalled                                    func(senderAddress []byte, acnt vmcommon.UserAccountHandler, dctTokenKey []byte, nonce uint64, dctData *dct.DCToken, mustUpdateAllFields bool, isReturnWithError bool) ([]byte, error)
-	GetDCTNFTTokenOnSenderCalled                             func(acnt vmcommon.UserAccountHandler, dctTokenKey []byte, nonce uint64) (*dct.DCToken, error)
-	GetDCTNFTTokenOnDestinationCalled                        func(acnt vmcommon.UserAccountHandler, dctTokenKey []byte, nonce uint64) (*dct.DCToken, bool, error)
-	GetDCTNFTTokenOnDestinationWithCustomSystemAccountCalled func(accnt vmcommon.UserAccountHandler, dctTokenKey []byte, nonce uint64, systemAccount vmcommon.UserAccountHandler) (*dct.DCToken, bool, error)
-	WasAlreadySentToDestinationShardAndUpdateStateCalled     func(tickerID []byte, nonce uint64, dstAddress []byte) (bool, error)
-	SaveNFTMetaDataToSystemAccountCalled                     func(tx data.TransactionHandler) error
-	AddToLiquiditySystemAccCalled                            func(dctTokenKey []byte, nonce uint64, transferValue *big.Int) error
+// DCDTNFTStorageHandlerStub -
+type DCDTNFTStorageHandlerStub struct {
+	SaveDCDTNFTTokenCalled                                    func(senderAddress []byte, acnt vmcommon.UserAccountHandler, dcdtTokenKey []byte, nonce uint64, dcdtData *dcdt.DCDigitalToken, mustUpdateAllFields bool, isReturnWithError bool) ([]byte, error)
+	GetDCDTNFTTokenOnSenderCalled                             func(acnt vmcommon.UserAccountHandler, dcdtTokenKey []byte, nonce uint64) (*dcdt.DCDigitalToken, error)
+	GetDCDTNFTTokenOnDestinationCalled                        func(acnt vmcommon.UserAccountHandler, dcdtTokenKey []byte, nonce uint64) (*dcdt.DCDigitalToken, bool, error)
+	GetDCDTNFTTokenOnDestinationWithCustomSystemAccountCalled func(accnt vmcommon.UserAccountHandler, dcdtTokenKey []byte, nonce uint64, systemAccount vmcommon.UserAccountHandler) (*dcdt.DCDigitalToken, bool, error)
+	WasAlreadySentToDestinationShardAndUpdateStateCalled      func(tickerID []byte, nonce uint64, dstAddress []byte) (bool, error)
+	SaveNFTMetaDataToSystemAccountCalled                      func(tx data.TransactionHandler) error
+	AddToLiquiditySystemAccCalled                             func(dcdtTokenKey []byte, nonce uint64, transferValue *big.Int) error
 }
 
-// SaveDCTNFTToken -
-func (stub *DCTNFTStorageHandlerStub) SaveDCTNFTToken(senderAddress []byte, acnt vmcommon.UserAccountHandler, dctTokenKey []byte, nonce uint64, dctData *dct.DCToken, mustUpdateAllFields bool, isReturnWithError bool) ([]byte, error) {
-	if stub.SaveDCTNFTTokenCalled != nil {
-		return stub.SaveDCTNFTTokenCalled(senderAddress, acnt, dctTokenKey, nonce, dctData, mustUpdateAllFields, isReturnWithError)
+// SaveDCDTNFTToken -
+func (stub *DCDTNFTStorageHandlerStub) SaveDCDTNFTToken(senderAddress []byte, acnt vmcommon.UserAccountHandler, dcdtTokenKey []byte, nonce uint64, dcdtData *dcdt.DCDigitalToken, mustUpdateAllFields bool, isReturnWithError bool) ([]byte, error) {
+	if stub.SaveDCDTNFTTokenCalled != nil {
+		return stub.SaveDCDTNFTTokenCalled(senderAddress, acnt, dcdtTokenKey, nonce, dcdtData, mustUpdateAllFields, isReturnWithError)
 	}
 	return nil, nil
 }
 
-// GetDCTNFTTokenOnSender -
-func (stub *DCTNFTStorageHandlerStub) GetDCTNFTTokenOnSender(acnt vmcommon.UserAccountHandler, dctTokenKey []byte, nonce uint64) (*dct.DCToken, error) {
-	if stub.GetDCTNFTTokenOnSenderCalled != nil {
-		return stub.GetDCTNFTTokenOnSenderCalled(acnt, dctTokenKey, nonce)
+// GetDCDTNFTTokenOnSender -
+func (stub *DCDTNFTStorageHandlerStub) GetDCDTNFTTokenOnSender(acnt vmcommon.UserAccountHandler, dcdtTokenKey []byte, nonce uint64) (*dcdt.DCDigitalToken, error) {
+	if stub.GetDCDTNFTTokenOnSenderCalled != nil {
+		return stub.GetDCDTNFTTokenOnSenderCalled(acnt, dcdtTokenKey, nonce)
 	}
 	return nil, nil
 }
 
-// GetDCTNFTTokenOnDestination -
-func (stub *DCTNFTStorageHandlerStub) GetDCTNFTTokenOnDestination(acnt vmcommon.UserAccountHandler, dctTokenKey []byte, nonce uint64) (*dct.DCToken, bool, error) {
-	if stub.GetDCTNFTTokenOnDestinationCalled != nil {
-		return stub.GetDCTNFTTokenOnDestinationCalled(acnt, dctTokenKey, nonce)
+// GetDCDTNFTTokenOnDestination -
+func (stub *DCDTNFTStorageHandlerStub) GetDCDTNFTTokenOnDestination(acnt vmcommon.UserAccountHandler, dcdtTokenKey []byte, nonce uint64) (*dcdt.DCDigitalToken, bool, error) {
+	if stub.GetDCDTNFTTokenOnDestinationCalled != nil {
+		return stub.GetDCDTNFTTokenOnDestinationCalled(acnt, dcdtTokenKey, nonce)
 	}
 	return nil, false, nil
 }
 
-// GetDCTNFTTokenOnDestinationWithCustomSystemAccount -
-func (stub *DCTNFTStorageHandlerStub) GetDCTNFTTokenOnDestinationWithCustomSystemAccount(accnt vmcommon.UserAccountHandler, dctTokenKey []byte, nonce uint64, systemAccount vmcommon.UserAccountHandler) (*dct.DCToken, bool, error) {
-	if stub.GetDCTNFTTokenOnDestinationWithCustomSystemAccountCalled != nil {
-		return stub.GetDCTNFTTokenOnDestinationWithCustomSystemAccountCalled(accnt, dctTokenKey, nonce, systemAccount)
+// GetDCDTNFTTokenOnDestinationWithCustomSystemAccount -
+func (stub *DCDTNFTStorageHandlerStub) GetDCDTNFTTokenOnDestinationWithCustomSystemAccount(accnt vmcommon.UserAccountHandler, dcdtTokenKey []byte, nonce uint64, systemAccount vmcommon.UserAccountHandler) (*dcdt.DCDigitalToken, bool, error) {
+	if stub.GetDCDTNFTTokenOnDestinationWithCustomSystemAccountCalled != nil {
+		return stub.GetDCDTNFTTokenOnDestinationWithCustomSystemAccountCalled(accnt, dcdtTokenKey, nonce, systemAccount)
 	}
 	return nil, false, nil
 }
 
 // WasAlreadySentToDestinationShardAndUpdateState -
-func (stub *DCTNFTStorageHandlerStub) WasAlreadySentToDestinationShardAndUpdateState(tickerID []byte, nonce uint64, dstAddress []byte) (bool, error) {
+func (stub *DCDTNFTStorageHandlerStub) WasAlreadySentToDestinationShardAndUpdateState(tickerID []byte, nonce uint64, dstAddress []byte) (bool, error) {
 	if stub.WasAlreadySentToDestinationShardAndUpdateStateCalled != nil {
 		return stub.WasAlreadySentToDestinationShardAndUpdateStateCalled(tickerID, nonce, dstAddress)
 	}
@@ -60,7 +60,7 @@ func (stub *DCTNFTStorageHandlerStub) WasAlreadySentToDestinationShardAndUpdateS
 }
 
 // SaveNFTMetaDataToSystemAccount -
-func (stub *DCTNFTStorageHandlerStub) SaveNFTMetaDataToSystemAccount(tx data.TransactionHandler) error {
+func (stub *DCDTNFTStorageHandlerStub) SaveNFTMetaDataToSystemAccount(tx data.TransactionHandler) error {
 	if stub.SaveNFTMetaDataToSystemAccountCalled != nil {
 		return stub.SaveNFTMetaDataToSystemAccountCalled(tx)
 	}
@@ -68,14 +68,14 @@ func (stub *DCTNFTStorageHandlerStub) SaveNFTMetaDataToSystemAccount(tx data.Tra
 }
 
 // AddToLiquiditySystemAcc -
-func (stub *DCTNFTStorageHandlerStub) AddToLiquiditySystemAcc(dctTokenKey []byte, nonce uint64, transferValue *big.Int) error {
+func (stub *DCDTNFTStorageHandlerStub) AddToLiquiditySystemAcc(dcdtTokenKey []byte, nonce uint64, transferValue *big.Int) error {
 	if stub.AddToLiquiditySystemAccCalled != nil {
-		return stub.AddToLiquiditySystemAccCalled(dctTokenKey, nonce, transferValue)
+		return stub.AddToLiquiditySystemAccCalled(dcdtTokenKey, nonce, transferValue)
 	}
 	return nil
 }
 
 // IsInterfaceNil -
-func (stub *DCTNFTStorageHandlerStub) IsInterfaceNil() bool {
+func (stub *DCDTNFTStorageHandlerStub) IsInterfaceNil() bool {
 	return stub == nil
 }

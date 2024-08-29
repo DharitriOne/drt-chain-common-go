@@ -65,8 +65,8 @@ var ErrAccountNotPayable = errors.New("sending value to non payable contract")
 // ErrNilUserAccount signals that nil user account was provided
 var ErrNilUserAccount = errors.New("nil user account")
 
-// ErrAddressIsNotDCTSystemSC signals that destination is not a system sc address
-var ErrAddressIsNotDCTSystemSC = errors.New("destination is not system sc address")
+// ErrAddressIsNotDCDTSystemSC signals that destination is not a system sc address
+var ErrAddressIsNotDCDTSystemSC = errors.New("destination is not system sc address")
 
 // ErrOnlySystemAccountAccepted signals that only system account is accepted
 var ErrOnlySystemAccountAccepted = errors.New("only system account is accepted")
@@ -77,14 +77,14 @@ var ErrNilGlobalSettingsHandler = errors.New("nil pause handler")
 // ErrNilRolesHandler signals that nil roles handler has been provided
 var ErrNilRolesHandler = errors.New("nil roles handler")
 
-// ErrDCTTokenIsPaused signals that dct token is paused
-var ErrDCTTokenIsPaused = errors.New("dct token is paused")
+// ErrDCDTTokenIsPaused signals that dcdt token is paused
+var ErrDCDTTokenIsPaused = errors.New("dcdt token is paused")
 
-// ErrDCTIsFrozenForAccount signals that account is frozen for given dct token
-var ErrDCTIsFrozenForAccount = errors.New("account is frozen for this dct token")
+// ErrDCDTIsFrozenForAccount signals that account is frozen for given dcdt token
+var ErrDCDTIsFrozenForAccount = errors.New("account is frozen for this dcdt token")
 
 // ErrCannotWipeAccountNotFrozen signals that account isn't frozen so the wipe is not possible
-var ErrCannotWipeAccountNotFrozen = errors.New("cannot wipe because the account is not frozen for this dct token")
+var ErrCannotWipeAccountNotFrozen = errors.New("cannot wipe because the account is not frozen for this dcdt token")
 
 // ErrNilPayableHandler signals that nil payableHandler was provided
 var ErrNilPayableHandler = errors.New("nil payableHandler was provided")
@@ -122,11 +122,11 @@ var ErrWrongTypeInContainer = errors.New("wrong type of object inside container"
 // ErrEmptyFunctionName signals that an empty function name has been provided
 var ErrEmptyFunctionName = errors.New("empty function name")
 
-// ErrInsufficientQuantityDCT signals the funds are insufficient for the DCT transfer
-var ErrInsufficientQuantityDCT = errors.New("insufficient quantity")
+// ErrInsufficientQuantityDCDT signals the funds are insufficient for the DCDT transfer
+var ErrInsufficientQuantityDCDT = errors.New("insufficient quantity")
 
-// ErrNilDCTNFTStorageHandler signals that a nil nft storage handler has been provided
-var ErrNilDCTNFTStorageHandler = errors.New("nil dct nft storage handler")
+// ErrNilDCDTNFTStorageHandler signals that a nil nft storage handler has been provided
+var ErrNilDCDTNFTStorageHandler = errors.New("nil dcdt nft storage handler")
 
 // ErrNilTransactionHandler signals that a nil transaction handler has been provided
 var ErrNilTransactionHandler = errors.New("nil transaction handler")
@@ -137,8 +137,8 @@ var ErrAddressIsNotAllowed = errors.New("address is not allowed to do the action
 // ErrInvalidNumOfArgs signals that the number of arguments is invalid
 var ErrInvalidNumOfArgs = errors.New("invalid number of arguments")
 
-// ErrInvalidNonce signals that invalid nonce for dct
-var ErrInvalidNonce = errors.New("invalid nonce for dct")
+// ErrInvalidNonce signals that invalid nonce for dcdt
+var ErrInvalidNonce = errors.New("invalid nonce for dcdt")
 
 // ErrTokenHasValidMetadata signals that token has a valid metadata
 var ErrTokenHasValidMetadata = errors.New("token has valid metadata")
@@ -146,14 +146,14 @@ var ErrTokenHasValidMetadata = errors.New("token has valid metadata")
 // ErrInvalidTokenID signals that invalid tokenID was provided
 var ErrInvalidTokenID = errors.New("invalid tokenID")
 
-// ErrNilDCTData signals that DCT data does not exist
-var ErrNilDCTData = errors.New("nil dct data")
+// ErrNilDCDTData signals that DCDT data does not exist
+var ErrNilDCDTData = errors.New("nil dcdt data")
 
 // ErrInvalidMetadata signals that invalid metadata was provided
 var ErrInvalidMetadata = errors.New("invalid metadata")
 
-// ErrInvalidLiquidityForDCT signals that liquidity is invalid for DCT
-var ErrInvalidLiquidityForDCT = errors.New("invalid liquidity for DCT")
+// ErrInvalidLiquidityForDCDT signals that liquidity is invalid for DCDT
+var ErrInvalidLiquidityForDCDT = errors.New("invalid liquidity for DCDT")
 
 // ErrTooManyTransferAddresses signals that too many transfer address roles has been added
 var ErrTooManyTransferAddresses = errors.New("too many transfer addresses")

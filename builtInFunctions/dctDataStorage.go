@@ -8,7 +8,7 @@ import (
 	"github.com/DharitriOne/drt-chain-core-go/core"
 	"github.com/DharitriOne/drt-chain-core-go/core/check"
 	"github.com/DharitriOne/drt-chain-core-go/data"
-	"github.com/DharitriOne/drt-chain-core-go/data/dct"
+	"github.com/DharitriOne/drt-chain-core-go/data/dcdt"
 	vmcommon "github.com/DharitriOne/drt-chain-vm-common-go"
 	"github.com/DharitriOne/drt-chain-vm-common-go/parsers"
 )
@@ -24,9 +24,9 @@ func defaultQueryOptions() queryOptions {
 	return queryOptions{}
 }
 
-type dctDataStorage struct {
+type dcdtDataStorage struct {
 	accounts              vmcommon.AccountsAdapter
-	globalSettingsHandler vmcommon.DCTGlobalSettingsHandler
+	globalSettingsHandler vmcommon.DCDTGlobalSettingsHandler
 	marshaller            vmcommon.Marshalizer
 	keyPrefix             []byte
 	shardCoordinator      vmcommon.Coordinator
@@ -34,17 +34,17 @@ type dctDataStorage struct {
 	enableEpochsHandler   vmcommon.EnableEpochsHandler
 }
 
-// ArgsNewDCTDataStorage defines the argument list for new dct data storage handler
-type ArgsNewDCTDataStorage struct {
+// ArgsNewDCDTDataStorage defines the argument list for new dcdt data storage handler
+type ArgsNewDCDTDataStorage struct {
 	Accounts              vmcommon.AccountsAdapter
-	GlobalSettingsHandler vmcommon.DCTGlobalSettingsHandler
+	GlobalSettingsHandler vmcommon.DCDTGlobalSettingsHandler
 	Marshalizer           vmcommon.Marshalizer
 	EnableEpochsHandler   vmcommon.EnableEpochsHandler
 	ShardCoordinator      vmcommon.Coordinator
 }
 
-// NewDCTDataStorage creates a new dct data storage handler
-func NewDCTDataStorage(args ArgsNewDCTDataStorage) (*dctDataStorage, error) {
+// NewDCDTDataStorage creates a new dcdt data storage handler
+func NewDCDTDataStorage(args ArgsNewDCDTDataStorage) (*dcdtDataStorage, error) {
 	if check.IfNil(args.Accounts) {
 		return nil, ErrNilAccountsAdapter
 	}
@@ -61,11 +61,11 @@ func NewDCTDataStorage(args ArgsNewDCTDataStorage) (*dctDataStorage, error) {
 		return nil, ErrNilShardCoordinator
 	}
 
-	e := &dctDataStorage{
+	e := &dcdtDataStorage{
 		accounts:              args.Accounts,
 		globalSettingsHandler: args.GlobalSettingsHandler,
 		marshaller:            args.Marshalizer,
-		keyPrefix:             []byte(baseDCTKeyPrefix),
+		keyPrefix:             []byte(baseDCDTKeyPrefix),
 		shardCoordinator:      args.ShardCoordinator,
 		txDataParser:          parsers.NewCallArgsParser(),
 		enableEpochsHandler:   args.EnableEpochsHandler,
@@ -74,13 +74,13 @@ func NewDCTDataStorage(args ArgsNewDCTDataStorage) (*dctDataStorage, error) {
 	return e, nil
 }
 
-// GetDCTNFTTokenOnSender gets the nft token on sender account
-func (e *dctDataStorage) GetDCTNFTTokenOnSender(
+// GetDCDTNFTTokenOnSender gets the nft token on sender account
+func (e *dcdtDataStorage) GetDCDTNFTTokenOnSender(
 	accnt vmcommon.UserAccountHandler,
-	dctTokenKey []byte,
+	dcdtTokenKey []byte,
 	nonce uint64,
-) (*dct.DCToken, error) {
-	dctData, isNew, err := e.GetDCTNFTTokenOnDestination(accnt, dctTokenKey, nonce)
+) (*dcdt.DCDigitalToken, error) {
+	dcdtData, isNew, err := e.GetDCDTNFTTokenOnDestination(accnt, dcdtTokenKey, nonce)
 	if err != nil {
 		return nil, err
 	}
@@ -88,25 +88,25 @@ func (e *dctDataStorage) GetDCTNFTTokenOnSender(
 		return nil, ErrNewNFTDataOnSenderAddress
 	}
 
-	return dctData, nil
+	return dcdtData, nil
 }
 
-// GetDCTNFTTokenOnDestination gets the nft token on destination account
-func (e *dctDataStorage) GetDCTNFTTokenOnDestination(
+// GetDCDTNFTTokenOnDestination gets the nft token on destination account
+func (e *dcdtDataStorage) GetDCDTNFTTokenOnDestination(
 	accnt vmcommon.UserAccountHandler,
-	dctTokenKey []byte,
+	dcdtTokenKey []byte,
 	nonce uint64,
-) (*dct.DCToken, bool, error) {
-	return e.getDCTNFTTokenOnDestinationWithAccountsAdapterOptions(accnt, dctTokenKey, nonce, defaultQueryOptions())
+) (*dcdt.DCDigitalToken, bool, error) {
+	return e.getDCDTNFTTokenOnDestinationWithAccountsAdapterOptions(accnt, dcdtTokenKey, nonce, defaultQueryOptions())
 }
 
-// GetDCTNFTTokenOnDestinationWithCustomSystemAccount gets the nft token on destination account by using a custom system account
-func (e *dctDataStorage) GetDCTNFTTokenOnDestinationWithCustomSystemAccount(
+// GetDCDTNFTTokenOnDestinationWithCustomSystemAccount gets the nft token on destination account by using a custom system account
+func (e *dcdtDataStorage) GetDCDTNFTTokenOnDestinationWithCustomSystemAccount(
 	accnt vmcommon.UserAccountHandler,
-	dctTokenKey []byte,
+	dcdtTokenKey []byte,
 	nonce uint64,
 	customSystemAccount vmcommon.UserAccountHandler,
-) (*dct.DCToken, bool, error) {
+) (*dcdt.DCDigitalToken, bool, error) {
 	if check.IfNil(customSystemAccount) {
 		return nil, false, ErrNilUserAccount
 	}
@@ -116,52 +116,52 @@ func (e *dctDataStorage) GetDCTNFTTokenOnDestinationWithCustomSystemAccount(
 		customSystemAccount:      customSystemAccount,
 	}
 
-	return e.getDCTNFTTokenOnDestinationWithAccountsAdapterOptions(accnt, dctTokenKey, nonce, queryOpts)
+	return e.getDCDTNFTTokenOnDestinationWithAccountsAdapterOptions(accnt, dcdtTokenKey, nonce, queryOpts)
 }
 
-func (e *dctDataStorage) getDCTNFTTokenOnDestinationWithAccountsAdapterOptions(
+func (e *dcdtDataStorage) getDCDTNFTTokenOnDestinationWithAccountsAdapterOptions(
 	accnt vmcommon.UserAccountHandler,
-	dctTokenKey []byte,
+	dcdtTokenKey []byte,
 	nonce uint64,
 	options queryOptions,
-) (*dct.DCToken, bool, error) {
-	dctNFTTokenKey := computeDCTNFTTokenKey(dctTokenKey, nonce)
-	dctData := &dct.DCToken{
+) (*dcdt.DCDigitalToken, bool, error) {
+	dcdtNFTTokenKey := computeDCDTNFTTokenKey(dcdtTokenKey, nonce)
+	dcdtData := &dcdt.DCDigitalToken{
 		Value: big.NewInt(0),
 		Type:  uint32(core.Fungible),
 	}
-	marshaledData, _, err := accnt.AccountDataHandler().RetrieveValue(dctNFTTokenKey)
+	marshaledData, _, err := accnt.AccountDataHandler().RetrieveValue(dcdtNFTTokenKey)
 	if core.IsGetNodeFromDBError(err) {
 		return nil, false, err
 	}
 	if err != nil || len(marshaledData) == 0 {
-		return dctData, true, nil
+		return dcdtData, true, nil
 	}
 
-	err = e.marshaller.Unmarshal(dctData, marshaledData)
+	err = e.marshaller.Unmarshal(dcdtData, marshaledData)
 	if err != nil {
 		return nil, false, err
 	}
 
 	if !e.enableEpochsHandler.IsFlagEnabled(SaveToSystemAccountFlag) || nonce == 0 {
-		return dctData, false, nil
+		return dcdtData, false, nil
 	}
 
-	dctMetaData, err := e.getDCTMetaDataFromSystemAccount(dctNFTTokenKey, options)
+	dcdtMetaData, err := e.getDCDTMetaDataFromSystemAccount(dcdtNFTTokenKey, options)
 	if err != nil {
 		return nil, false, err
 	}
-	if dctMetaData != nil {
-		dctData.TokenMetaData = dctMetaData
+	if dcdtMetaData != nil {
+		dcdtData.TokenMetaData = dcdtMetaData
 	}
 
-	return dctData, false, nil
+	return dcdtData, false, nil
 }
 
-func (e *dctDataStorage) getDCTDigitalTokenDataFromSystemAccount(
+func (e *dcdtDataStorage) getDCDTDigitalTokenDataFromSystemAccount(
 	tokenKey []byte,
 	options queryOptions,
-) (*dct.DCToken, vmcommon.UserAccountHandler, error) {
+) (*dcdt.DCDigitalToken, vmcommon.UserAccountHandler, error) {
 	systemAcc, err := e.getSystemAccount(options)
 	if err != nil {
 		return nil, nil, err
@@ -175,34 +175,34 @@ func (e *dctDataStorage) getDCTDigitalTokenDataFromSystemAccount(
 		return nil, systemAcc, nil
 	}
 
-	dctData := &dct.DCToken{}
-	err = e.marshaller.Unmarshal(dctData, marshaledData)
+	dcdtData := &dcdt.DCDigitalToken{}
+	err = e.marshaller.Unmarshal(dcdtData, marshaledData)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return dctData, systemAcc, nil
+	return dcdtData, systemAcc, nil
 }
 
-func (e *dctDataStorage) getDCTMetaDataFromSystemAccount(
+func (e *dcdtDataStorage) getDCDTMetaDataFromSystemAccount(
 	tokenKey []byte,
 	options queryOptions,
-) (*dct.MetaData, error) {
-	dctData, _, err := e.getDCTDigitalTokenDataFromSystemAccount(tokenKey, options)
+) (*dcdt.MetaData, error) {
+	dcdtData, _, err := e.getDCDTDigitalTokenDataFromSystemAccount(tokenKey, options)
 	if err != nil {
 		return nil, err
 	}
-	if dctData == nil {
+	if dcdtData == nil {
 		return nil, nil
 	}
 
-	return dctData.TokenMetaData, nil
+	return dcdtData.TokenMetaData, nil
 }
 
 // CheckCollectionIsFrozenForAccount returns
-func (e *dctDataStorage) checkCollectionIsFrozenForAccount(
+func (e *dcdtDataStorage) checkCollectionIsFrozenForAccount(
 	accnt vmcommon.UserAccountHandler,
-	dctTokenKey []byte,
+	dcdtTokenKey []byte,
 	nonce uint64,
 	isReturnWithError bool,
 ) error {
@@ -213,11 +213,11 @@ func (e *dctDataStorage) checkCollectionIsFrozenForAccount(
 		return nil
 	}
 
-	dctData := &dct.DCToken{
+	dcdtData := &dcdt.DCDigitalToken{
 		Value: big.NewInt(0),
 		Type:  uint32(core.Fungible),
 	}
-	marshaledData, _, err := accnt.AccountDataHandler().RetrieveValue(dctTokenKey)
+	marshaledData, _, err := accnt.AccountDataHandler().RetrieveValue(dcdtTokenKey)
 	if core.IsGetNodeFromDBError(err) {
 		return err
 	}
@@ -225,38 +225,38 @@ func (e *dctDataStorage) checkCollectionIsFrozenForAccount(
 		return nil
 	}
 
-	err = e.marshaller.Unmarshal(dctData, marshaledData)
+	err = e.marshaller.Unmarshal(dcdtData, marshaledData)
 	if err != nil {
 		return err
 	}
 
-	dctUserMetaData := DCTUserMetadataFromBytes(dctData.Properties)
-	if dctUserMetaData.Frozen {
-		return ErrDCTIsFrozenForAccount
+	dcdtUserMetaData := DCDTUserMetadataFromBytes(dcdtData.Properties)
+	if dcdtUserMetaData.Frozen {
+		return ErrDCDTIsFrozenForAccount
 	}
 
 	return nil
 }
 
-func (e *dctDataStorage) checkFrozenPauseProperties(
+func (e *dcdtDataStorage) checkFrozenPauseProperties(
 	acnt vmcommon.UserAccountHandler,
-	dctTokenKey []byte,
+	dcdtTokenKey []byte,
 	nonce uint64,
-	dctData *dct.DCToken,
+	dcdtData *dcdt.DCDigitalToken,
 	isReturnWithError bool,
 ) error {
-	err := checkFrozeAndPause(acnt.AddressBytes(), dctTokenKey, dctData, e.globalSettingsHandler, isReturnWithError)
+	err := checkFrozeAndPause(acnt.AddressBytes(), dcdtTokenKey, dcdtData, e.globalSettingsHandler, isReturnWithError)
 	if err != nil {
 		return err
 	}
 
-	dctNFTTokenKey := computeDCTNFTTokenKey(dctTokenKey, nonce)
-	err = checkFrozeAndPause(acnt.AddressBytes(), dctNFTTokenKey, dctData, e.globalSettingsHandler, isReturnWithError)
+	dcdtNFTTokenKey := computeDCDTNFTTokenKey(dcdtTokenKey, nonce)
+	err = checkFrozeAndPause(acnt.AddressBytes(), dcdtNFTTokenKey, dcdtData, e.globalSettingsHandler, isReturnWithError)
 	if err != nil {
 		return err
 	}
 
-	err = e.checkCollectionIsFrozenForAccount(acnt, dctTokenKey, nonce, isReturnWithError)
+	err = e.checkCollectionIsFrozenForAccount(acnt, dcdtTokenKey, nonce, isReturnWithError)
 	if err != nil {
 		return err
 	}
@@ -264,9 +264,9 @@ func (e *dctDataStorage) checkFrozenPauseProperties(
 	return nil
 }
 
-// AddToLiquiditySystemAcc will increase/decrease the liquidity for DCT Tokens on the metadata
-func (e *dctDataStorage) AddToLiquiditySystemAcc(
-	dctTokenKey []byte,
+// AddToLiquiditySystemAcc will increase/decrease the liquidity for DCDT Tokens on the metadata
+func (e *dcdtDataStorage) AddToLiquiditySystemAcc(
+	dcdtTokenKey []byte,
 	nonce uint64,
 	transferValue *big.Int,
 ) error {
@@ -276,36 +276,36 @@ func (e *dctDataStorage) AddToLiquiditySystemAcc(
 		return nil
 	}
 
-	dctNFTTokenKey := computeDCTNFTTokenKey(dctTokenKey, nonce)
-	dctData, systemAcc, err := e.getDCTDigitalTokenDataFromSystemAccount(dctNFTTokenKey, defaultQueryOptions())
+	dcdtNFTTokenKey := computeDCDTNFTTokenKey(dcdtTokenKey, nonce)
+	dcdtData, systemAcc, err := e.getDCDTDigitalTokenDataFromSystemAccount(dcdtNFTTokenKey, defaultQueryOptions())
 	if err != nil {
 		return err
 	}
 
-	if dctData == nil {
-		return ErrNilDCTData
+	if dcdtData == nil {
+		return ErrNilDCDTData
 	}
 
 	// old style metaData - nothing to do
-	if len(dctData.Reserved) == 0 {
+	if len(dcdtData.Reserved) == 0 {
 		return nil
 	}
 
 	if e.enableEpochsHandler.IsFlagEnabled(FixOldTokenLiquidityFlag) {
 		// old tokens which were transferred intra shard before the activation of this flag
-		if dctData.Value.Cmp(zero) == 0 && transferValue.Cmp(zero) < 0 {
-			dctData.Reserved = nil
-			return e.marshalAndSaveData(systemAcc, dctData, dctNFTTokenKey)
+		if dcdtData.Value.Cmp(zero) == 0 && transferValue.Cmp(zero) < 0 {
+			dcdtData.Reserved = nil
+			return e.marshalAndSaveData(systemAcc, dcdtData, dcdtNFTTokenKey)
 		}
 	}
 
-	dctData.Value.Add(dctData.Value, transferValue)
-	if dctData.Value.Cmp(zero) < 0 {
-		return ErrInvalidLiquidityForDCT
+	dcdtData.Value.Add(dcdtData.Value, transferValue)
+	if dcdtData.Value.Cmp(zero) < 0 {
+		return ErrInvalidLiquidityForDCDT
 	}
 
-	if dctData.Value.Cmp(zero) == 0 {
-		err = systemAcc.AccountDataHandler().SaveKeyValue(dctNFTTokenKey, nil)
+	if dcdtData.Value.Cmp(zero) == 0 {
+		err = systemAcc.AccountDataHandler().SaveKeyValue(dcdtNFTTokenKey, nil)
 		if err != nil {
 			return err
 		}
@@ -313,7 +313,7 @@ func (e *dctDataStorage) AddToLiquiditySystemAcc(
 		return e.accounts.SaveAccount(systemAcc)
 	}
 
-	err = e.marshalAndSaveData(systemAcc, dctData, dctNFTTokenKey)
+	err = e.marshalAndSaveData(systemAcc, dcdtData, dcdtNFTTokenKey)
 	if err != nil {
 		return err
 	}
@@ -321,68 +321,68 @@ func (e *dctDataStorage) AddToLiquiditySystemAcc(
 	return nil
 }
 
-// SaveDCTNFTToken saves the nft token to the account and system account
-func (e *dctDataStorage) SaveDCTNFTToken(
+// SaveDCDTNFTToken saves the nft token to the account and system account
+func (e *dcdtDataStorage) SaveDCDTNFTToken(
 	senderAddress []byte,
 	acnt vmcommon.UserAccountHandler,
-	dctTokenKey []byte,
+	dcdtTokenKey []byte,
 	nonce uint64,
-	dctData *dct.DCToken,
+	dcdtData *dcdt.DCDigitalToken,
 	mustUpdateAllFields bool,
 	isReturnWithError bool,
 ) ([]byte, error) {
-	err := e.checkFrozenPauseProperties(acnt, dctTokenKey, nonce, dctData, isReturnWithError)
+	err := e.checkFrozenPauseProperties(acnt, dcdtTokenKey, nonce, dcdtData, isReturnWithError)
 	if err != nil {
 		return nil, err
 	}
 
-	dctNFTTokenKey := computeDCTNFTTokenKey(dctTokenKey, nonce)
+	dcdtNFTTokenKey := computeDCDTNFTTokenKey(dcdtTokenKey, nonce)
 	senderShardID := e.shardCoordinator.ComputeId(senderAddress)
 	if e.enableEpochsHandler.IsFlagEnabled(SaveToSystemAccountFlag) {
-		err = e.saveDCTMetaDataToSystemAccount(acnt, senderShardID, dctNFTTokenKey, nonce, dctData, mustUpdateAllFields)
+		err = e.saveDCDTMetaDataToSystemAccount(acnt, senderShardID, dcdtNFTTokenKey, nonce, dcdtData, mustUpdateAllFields)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	if dctData.Value.Cmp(zero) <= 0 {
-		return nil, acnt.AccountDataHandler().SaveKeyValue(dctNFTTokenKey, nil)
+	if dcdtData.Value.Cmp(zero) <= 0 {
+		return nil, acnt.AccountDataHandler().SaveKeyValue(dcdtNFTTokenKey, nil)
 	}
 
 	if !e.enableEpochsHandler.IsFlagEnabled(SaveToSystemAccountFlag) {
-		marshaledData, errMarshal := e.marshaller.Marshal(dctData)
+		marshaledData, errMarshal := e.marshaller.Marshal(dcdtData)
 		if errMarshal != nil {
 			return nil, errMarshal
 		}
 
-		return marshaledData, acnt.AccountDataHandler().SaveKeyValue(dctNFTTokenKey, marshaledData)
+		return marshaledData, acnt.AccountDataHandler().SaveKeyValue(dcdtNFTTokenKey, marshaledData)
 	}
 
-	dctDataOnAccount := &dct.DCToken{
-		Type:       dctData.Type,
-		Value:      dctData.Value,
-		Properties: dctData.Properties,
+	dcdtDataOnAccount := &dcdt.DCDigitalToken{
+		Type:       dcdtData.Type,
+		Value:      dcdtData.Value,
+		Properties: dcdtData.Properties,
 	}
-	marshaledData, err := e.marshaller.Marshal(dctDataOnAccount)
+	marshaledData, err := e.marshaller.Marshal(dcdtDataOnAccount)
 	if err != nil {
 		return nil, err
 	}
 
-	return marshaledData, acnt.AccountDataHandler().SaveKeyValue(dctNFTTokenKey, marshaledData)
+	return marshaledData, acnt.AccountDataHandler().SaveKeyValue(dcdtNFTTokenKey, marshaledData)
 }
 
-func (e *dctDataStorage) saveDCTMetaDataToSystemAccount(
+func (e *dcdtDataStorage) saveDCDTMetaDataToSystemAccount(
 	userAcc vmcommon.UserAccountHandler,
 	senderShardID uint32,
-	dctNFTTokenKey []byte,
+	dcdtNFTTokenKey []byte,
 	nonce uint64,
-	dctData *dct.DCToken,
+	dcdtData *dcdt.DCDigitalToken,
 	mustUpdateAllFields bool,
 ) error {
 	if nonce == 0 {
 		return nil
 	}
-	if dctData.TokenMetaData == nil {
+	if dcdtData.TokenMetaData == nil {
 		return nil
 	}
 
@@ -391,11 +391,11 @@ func (e *dctDataStorage) saveDCTMetaDataToSystemAccount(
 		return err
 	}
 
-	currentSaveData, _, err := systemAcc.AccountDataHandler().RetrieveValue(dctNFTTokenKey)
+	currentSaveData, _, err := systemAcc.AccountDataHandler().RetrieveValue(dcdtNFTTokenKey)
 	if core.IsGetNodeFromDBError(err) {
 		return err
 	}
-	err = e.saveMetadataIfRequired(dctNFTTokenKey, systemAcc, currentSaveData, dctData)
+	err = e.saveMetadataIfRequired(dcdtNFTTokenKey, systemAcc, currentSaveData, dcdtData)
 	if err != nil {
 		return err
 	}
@@ -404,18 +404,18 @@ func (e *dctDataStorage) saveDCTMetaDataToSystemAccount(
 		return nil
 	}
 
-	dctDataOnSystemAcc := &dct.DCToken{
-		Type:          dctData.Type,
+	dcdtDataOnSystemAcc := &dcdt.DCDigitalToken{
+		Type:          dcdtData.Type,
 		Value:         big.NewInt(0),
-		TokenMetaData: dctData.TokenMetaData,
+		TokenMetaData: dcdtData.TokenMetaData,
 		Properties:    make([]byte, e.shardCoordinator.NumberOfShards()),
 	}
 	isSendAlwaysFlagEnabled := e.enableEpochsHandler.IsFlagEnabled(SendAlwaysFlag)
 	if len(currentSaveData) == 0 && isSendAlwaysFlagEnabled {
-		dctDataOnSystemAcc.Properties = nil
-		dctDataOnSystemAcc.Reserved = []byte{1}
+		dcdtDataOnSystemAcc.Properties = nil
+		dcdtDataOnSystemAcc.Reserved = []byte{1}
 
-		err = e.setReservedToNilForOldToken(dctDataOnSystemAcc, userAcc, dctNFTTokenKey)
+		err = e.setReservedToNilForOldToken(dcdtDataOnSystemAcc, userAcc, dcdtNFTTokenKey)
 		if err != nil {
 			return err
 		}
@@ -424,21 +424,21 @@ func (e *dctDataStorage) saveDCTMetaDataToSystemAccount(
 	if !isSendAlwaysFlagEnabled {
 		selfID := e.shardCoordinator.SelfId()
 		if selfID != core.MetachainShardId {
-			dctDataOnSystemAcc.Properties[selfID] = existsOnShard
+			dcdtDataOnSystemAcc.Properties[selfID] = existsOnShard
 		}
 		if senderShardID != core.MetachainShardId {
-			dctDataOnSystemAcc.Properties[senderShardID] = existsOnShard
+			dcdtDataOnSystemAcc.Properties[senderShardID] = existsOnShard
 		}
 	}
 
-	return e.marshalAndSaveData(systemAcc, dctDataOnSystemAcc, dctNFTTokenKey)
+	return e.marshalAndSaveData(systemAcc, dcdtDataOnSystemAcc, dcdtNFTTokenKey)
 }
 
-func (e *dctDataStorage) saveMetadataIfRequired(
-	dctNFTTokenKey []byte,
+func (e *dcdtDataStorage) saveMetadataIfRequired(
+	dcdtNFTTokenKey []byte,
 	systemAcc vmcommon.UserAccountHandler,
 	currentSaveData []byte,
-	dctData *dct.DCToken,
+	dcdtData *dcdt.DCDigitalToken,
 ) error {
 	if !e.enableEpochsHandler.IsFlagEnabled(AlwaysSaveTokenMetaDataFlag) {
 		return nil
@@ -452,23 +452,23 @@ func (e *dctDataStorage) saveMetadataIfRequired(
 		return nil
 	}
 
-	dctDataOnSystemAcc := &dct.DCToken{}
-	err := e.marshaller.Unmarshal(dctDataOnSystemAcc, currentSaveData)
+	dcdtDataOnSystemAcc := &dcdt.DCDigitalToken{}
+	err := e.marshaller.Unmarshal(dcdtDataOnSystemAcc, currentSaveData)
 	if err != nil {
 		return err
 	}
-	if len(dctDataOnSystemAcc.Reserved) > 0 {
+	if len(dcdtDataOnSystemAcc.Reserved) > 0 {
 		return nil
 	}
 
-	dctDataOnSystemAcc.TokenMetaData = dctData.TokenMetaData
-	return e.marshalAndSaveData(systemAcc, dctDataOnSystemAcc, dctNFTTokenKey)
+	dcdtDataOnSystemAcc.TokenMetaData = dcdtData.TokenMetaData
+	return e.marshalAndSaveData(systemAcc, dcdtDataOnSystemAcc, dcdtNFTTokenKey)
 }
 
-func (e *dctDataStorage) setReservedToNilForOldToken(
-	dctDataOnSystemAcc *dct.DCToken,
+func (e *dcdtDataStorage) setReservedToNilForOldToken(
+	dcdtDataOnSystemAcc *dcdt.DCDigitalToken,
 	userAcc vmcommon.UserAccountHandler,
-	dctNFTTokenKey []byte,
+	dcdtNFTTokenKey []byte,
 ) error {
 	if !e.enableEpochsHandler.IsFlagEnabled(FixOldTokenLiquidityFlag) {
 		return nil
@@ -477,7 +477,7 @@ func (e *dctDataStorage) setReservedToNilForOldToken(
 	if check.IfNil(userAcc) {
 		return ErrNilUserAccount
 	}
-	dataOnUserAcc, _, errNotCritical := userAcc.AccountDataHandler().RetrieveValue(dctNFTTokenKey)
+	dataOnUserAcc, _, errNotCritical := userAcc.AccountDataHandler().RetrieveValue(dcdtNFTTokenKey)
 	if core.IsGetNodeFromDBError(errNotCritical) {
 		return errNotCritical
 	}
@@ -486,32 +486,32 @@ func (e *dctDataStorage) setReservedToNilForOldToken(
 		return nil
 	}
 
-	dctDataOnUserAcc := &dct.DCToken{}
-	err := e.marshaller.Unmarshal(dctDataOnUserAcc, dataOnUserAcc)
+	dcdtDataOnUserAcc := &dcdt.DCDigitalToken{}
+	err := e.marshaller.Unmarshal(dcdtDataOnUserAcc, dataOnUserAcc)
 	if err != nil {
 		return err
 	}
 
-	// tokens which were last moved before flagOptimizeNFTStore keep the dct metaData on the user account
+	// tokens which were last moved before flagOptimizeNFTStore keep the dcdt metaData on the user account
 	// these are not compatible with the new liquidity model,so we set the reserved field to nil
-	if dctDataOnUserAcc.TokenMetaData != nil {
-		dctDataOnSystemAcc.Reserved = nil
+	if dcdtDataOnUserAcc.TokenMetaData != nil {
+		dcdtDataOnSystemAcc.Reserved = nil
 	}
 
 	return nil
 }
 
-func (e *dctDataStorage) marshalAndSaveData(
+func (e *dcdtDataStorage) marshalAndSaveData(
 	systemAcc vmcommon.UserAccountHandler,
-	dctData *dct.DCToken,
-	dctNFTTokenKey []byte,
+	dcdtData *dcdt.DCDigitalToken,
+	dcdtNFTTokenKey []byte,
 ) error {
-	marshaledData, err := e.marshaller.Marshal(dctData)
+	marshaledData, err := e.marshaller.Marshal(dcdtData)
 	if err != nil {
 		return err
 	}
 
-	err = systemAcc.AccountDataHandler().SaveKeyValue(dctNFTTokenKey, marshaledData)
+	err = systemAcc.AccountDataHandler().SaveKeyValue(dcdtNFTTokenKey, marshaledData)
 	if err != nil {
 		return err
 	}
@@ -519,7 +519,7 @@ func (e *dctDataStorage) marshalAndSaveData(
 	return e.accounts.SaveAccount(systemAcc)
 }
 
-func (e *dctDataStorage) getSystemAccount(options queryOptions) (vmcommon.UserAccountHandler, error) {
+func (e *dcdtDataStorage) getSystemAccount(options queryOptions) (vmcommon.UserAccountHandler, error) {
 	if options.isCustomSystemAccountSet && !check.IfNil(options.customSystemAccount) {
 		return options.customSystemAccount, nil
 	}
@@ -527,7 +527,7 @@ func (e *dctDataStorage) getSystemAccount(options queryOptions) (vmcommon.UserAc
 	return e.loadSystemAccount()
 }
 
-func (e *dctDataStorage) loadSystemAccount() (vmcommon.UserAccountHandler, error) {
+func (e *dcdtDataStorage) loadSystemAccount() (vmcommon.UserAccountHandler, error) {
 	systemSCAccount, err := e.accounts.LoadAccount(vmcommon.SystemAccountAddress)
 	if err != nil {
 		return nil, err
@@ -545,7 +545,7 @@ func (e *dctDataStorage) loadSystemAccount() (vmcommon.UserAccountHandler, error
 
 // WasAlreadySentToDestinationShardAndUpdateState checks whether NFT metadata was sent to destination shard or not
 // and saves the destination shard as sent
-func (e *dctDataStorage) WasAlreadySentToDestinationShardAndUpdateState(
+func (e *dcdtDataStorage) WasAlreadySentToDestinationShardAndUpdateState(
 	tickerID []byte,
 	nonce uint64,
 	dstAddress []byte,
@@ -569,33 +569,33 @@ func (e *dctDataStorage) WasAlreadySentToDestinationShardAndUpdateState(
 	if dstShardID == core.MetachainShardId {
 		return true, nil
 	}
-	dctTokenKey := append(e.keyPrefix, tickerID...)
-	dctNFTTokenKey := computeDCTNFTTokenKey(dctTokenKey, nonce)
+	dcdtTokenKey := append(e.keyPrefix, tickerID...)
+	dcdtNFTTokenKey := computeDCDTNFTTokenKey(dcdtTokenKey, nonce)
 
-	dctData, systemAcc, err := e.getDCTDigitalTokenDataFromSystemAccount(dctNFTTokenKey, defaultQueryOptions())
+	dcdtData, systemAcc, err := e.getDCDTDigitalTokenDataFromSystemAccount(dcdtNFTTokenKey, defaultQueryOptions())
 	if err != nil {
 		return false, err
 	}
-	if dctData == nil {
+	if dcdtData == nil {
 		return false, nil
 	}
 
-	if uint32(len(dctData.Properties)) < e.shardCoordinator.NumberOfShards() {
+	if uint32(len(dcdtData.Properties)) < e.shardCoordinator.NumberOfShards() {
 		newSlice := make([]byte, e.shardCoordinator.NumberOfShards())
-		copy(newSlice, dctData.Properties)
-		dctData.Properties = newSlice
+		copy(newSlice, dcdtData.Properties)
+		dcdtData.Properties = newSlice
 	}
 
-	if dctData.Properties[dstShardID] > 0 {
+	if dcdtData.Properties[dstShardID] > 0 {
 		return true, nil
 	}
 
-	dctData.Properties[dstShardID] = existsOnShard
-	return false, e.marshalAndSaveData(systemAcc, dctData, dctNFTTokenKey)
+	dcdtData.Properties[dstShardID] = existsOnShard
+	return false, e.marshalAndSaveData(systemAcc, dcdtData, dcdtNFTTokenKey)
 }
 
 // SaveNFTMetaDataToSystemAccount this saves the NFT metadata to the system account even if there was an error in processing
-func (e *dctDataStorage) SaveNFTMetaDataToSystemAccount(
+func (e *dcdtDataStorage) SaveNFTMetaDataToSystemAccount(
 	tx data.TransactionHandler,
 ) error {
 	if !e.enableEpochsHandler.IsFlagEnabled(SaveToSystemAccountFlag) {
@@ -624,35 +624,35 @@ func (e *dctDataStorage) SaveNFTMetaDataToSystemAccount(
 	}
 
 	switch function {
-	case core.BuiltInFunctionDCTNFTTransfer:
+	case core.BuiltInFunctionDCDTNFTTransfer:
 		return e.addMetaDataToSystemAccountFromNFTTransfer(sndShardID, arguments)
-	case core.BuiltInFunctionMultiDCTNFTTransfer:
+	case core.BuiltInFunctionMultiDCDTNFTTransfer:
 		return e.addMetaDataToSystemAccountFromMultiTransfer(sndShardID, arguments)
 	default:
 		return nil
 	}
 }
 
-func (e *dctDataStorage) addMetaDataToSystemAccountFromNFTTransfer(
+func (e *dcdtDataStorage) addMetaDataToSystemAccountFromNFTTransfer(
 	sndShardID uint32,
 	arguments [][]byte,
 ) error {
 	if !bytes.Equal(arguments[3], zeroByteArray) {
-		dctTransferData := &dct.DCToken{}
-		err := e.marshaller.Unmarshal(dctTransferData, arguments[3])
+		dcdtTransferData := &dcdt.DCDigitalToken{}
+		err := e.marshaller.Unmarshal(dcdtTransferData, arguments[3])
 		if err != nil {
 			return err
 		}
-		dctTokenKey := append(e.keyPrefix, arguments[0]...)
+		dcdtTokenKey := append(e.keyPrefix, arguments[0]...)
 		nonce := big.NewInt(0).SetBytes(arguments[1]).Uint64()
-		dctNFTTokenKey := computeDCTNFTTokenKey(dctTokenKey, nonce)
+		dcdtNFTTokenKey := computeDCDTNFTTokenKey(dcdtTokenKey, nonce)
 
-		return e.saveDCTMetaDataToSystemAccount(nil, sndShardID, dctNFTTokenKey, nonce, dctTransferData, true)
+		return e.saveDCDTMetaDataToSystemAccount(nil, sndShardID, dcdtNFTTokenKey, nonce, dcdtTransferData, true)
 	}
 	return nil
 }
 
-func (e *dctDataStorage) addMetaDataToSystemAccountFromMultiTransfer(
+func (e *dcdtDataStorage) addMetaDataToSystemAccountFromMultiTransfer(
 	sndShardID uint32,
 	arguments [][]byte,
 ) error {
@@ -672,16 +672,16 @@ func (e *dctDataStorage) addMetaDataToSystemAccountFromMultiTransfer(
 		nonce := big.NewInt(0).SetBytes(arguments[tokenStartIndex+1]).Uint64()
 
 		if nonce > 0 && len(arguments[tokenStartIndex+2]) > vmcommon.MaxLengthForValueToOptTransfer {
-			dctTransferData := &dct.DCToken{}
+			dcdtTransferData := &dcdt.DCDigitalToken{}
 			marshaledNFTTransfer := arguments[tokenStartIndex+2]
-			err := e.marshaller.Unmarshal(dctTransferData, marshaledNFTTransfer)
+			err := e.marshaller.Unmarshal(dcdtTransferData, marshaledNFTTransfer)
 			if err != nil {
 				return fmt.Errorf("%w for token %s", err, string(tokenID))
 			}
 
-			dctTokenKey := append(e.keyPrefix, tokenID...)
-			dctNFTTokenKey := computeDCTNFTTokenKey(dctTokenKey, nonce)
-			err = e.saveDCTMetaDataToSystemAccount(nil, sndShardID, dctNFTTokenKey, nonce, dctTransferData, true)
+			dcdtTokenKey := append(e.keyPrefix, tokenID...)
+			dcdtNFTTokenKey := computeDCDTNFTTokenKey(dcdtTokenKey, nonce)
+			err = e.saveDCDTMetaDataToSystemAccount(nil, sndShardID, dcdtNFTTokenKey, nonce, dcdtTransferData, true)
 			if err != nil {
 				return err
 			}
@@ -692,6 +692,6 @@ func (e *dctDataStorage) addMetaDataToSystemAccountFromMultiTransfer(
 }
 
 // IsInterfaceNil returns true if underlying object in nil
-func (e *dctDataStorage) IsInterfaceNil() bool {
+func (e *dcdtDataStorage) IsInterfaceNil() bool {
 	return e == nil
 }

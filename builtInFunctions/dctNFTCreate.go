@@ -8,7 +8,7 @@ import (
 
 	"github.com/DharitriOne/drt-chain-core-go/core"
 	"github.com/DharitriOne/drt-chain-core-go/core/check"
-	"github.com/DharitriOne/drt-chain-core-go/data/dct"
+	"github.com/DharitriOne/drt-chain-core-go/data/dcdt"
 	"github.com/DharitriOne/drt-chain-core-go/data/vm"
 	logger "github.com/DharitriOne/drt-chain-logger-go"
 	vmcommon "github.com/DharitriOne/drt-chain-vm-common-go"
@@ -16,34 +16,34 @@ import (
 
 var (
 	log         = logger.GetOrCreate("builtInFunctions")
-	noncePrefix = []byte(core.ProtectedKeyPrefix + core.DCTNFTLatestNonceIdentifier)
+	noncePrefix = []byte(core.ProtectedKeyPrefix + core.DCDTNFTLatestNonceIdentifier)
 )
 
-type dctNFTCreate struct {
+type dcdtNFTCreate struct {
 	baseAlwaysActiveHandler
 	keyPrefix             []byte
 	accounts              vmcommon.AccountsAdapter
 	marshaller            vmcommon.Marshalizer
-	globalSettingsHandler vmcommon.DCTGlobalSettingsHandler
-	rolesHandler          vmcommon.DCTRoleHandler
+	globalSettingsHandler vmcommon.DCDTGlobalSettingsHandler
+	rolesHandler          vmcommon.DCDTRoleHandler
 	funcGasCost           uint64
 	gasConfig             vmcommon.BaseOperationCost
-	dctStorageHandler     vmcommon.DCTNFTStorageHandler
+	dcdtStorageHandler    vmcommon.DCDTNFTStorageHandler
 	enableEpochsHandler   vmcommon.EnableEpochsHandler
 	mutExecution          sync.RWMutex
 }
 
-// NewDCTNFTCreateFunc returns the dct NFT create built-in function component
-func NewDCTNFTCreateFunc(
+// NewDCDTNFTCreateFunc returns the dcdt NFT create built-in function component
+func NewDCDTNFTCreateFunc(
 	funcGasCost uint64,
 	gasConfig vmcommon.BaseOperationCost,
 	marshaller vmcommon.Marshalizer,
-	globalSettingsHandler vmcommon.DCTGlobalSettingsHandler,
-	rolesHandler vmcommon.DCTRoleHandler,
-	dctStorageHandler vmcommon.DCTNFTStorageHandler,
+	globalSettingsHandler vmcommon.DCDTGlobalSettingsHandler,
+	rolesHandler vmcommon.DCDTRoleHandler,
+	dcdtStorageHandler vmcommon.DCDTNFTStorageHandler,
 	accounts vmcommon.AccountsAdapter,
 	enableEpochsHandler vmcommon.EnableEpochsHandler,
-) (*dctNFTCreate, error) {
+) (*dcdtNFTCreate, error) {
 	if check.IfNil(marshaller) {
 		return nil, ErrNilMarshalizer
 	}
@@ -53,8 +53,8 @@ func NewDCTNFTCreateFunc(
 	if check.IfNil(rolesHandler) {
 		return nil, ErrNilRolesHandler
 	}
-	if check.IfNil(dctStorageHandler) {
-		return nil, ErrNilDCTNFTStorageHandler
+	if check.IfNil(dcdtStorageHandler) {
+		return nil, ErrNilDCDTNFTStorageHandler
 	}
 	if check.IfNil(enableEpochsHandler) {
 		return nil, ErrNilEnableEpochsHandler
@@ -63,14 +63,14 @@ func NewDCTNFTCreateFunc(
 		return nil, ErrNilAccountsAdapter
 	}
 
-	e := &dctNFTCreate{
-		keyPrefix:             []byte(baseDCTKeyPrefix),
+	e := &dcdtNFTCreate{
+		keyPrefix:             []byte(baseDCDTKeyPrefix),
 		marshaller:            marshaller,
 		globalSettingsHandler: globalSettingsHandler,
 		rolesHandler:          rolesHandler,
 		funcGasCost:           funcGasCost,
 		gasConfig:             gasConfig,
-		dctStorageHandler:     dctStorageHandler,
+		dcdtStorageHandler:    dcdtStorageHandler,
 		enableEpochsHandler:   enableEpochsHandler,
 		mutExecution:          sync.RWMutex{},
 		accounts:              accounts,
@@ -80,18 +80,18 @@ func NewDCTNFTCreateFunc(
 }
 
 // SetNewGasConfig is called whenever gas cost is changed
-func (e *dctNFTCreate) SetNewGasConfig(gasCost *vmcommon.GasCost) {
+func (e *dcdtNFTCreate) SetNewGasConfig(gasCost *vmcommon.GasCost) {
 	if gasCost == nil {
 		return
 	}
 
 	e.mutExecution.Lock()
-	e.funcGasCost = gasCost.BuiltInCost.DCTNFTCreate
+	e.funcGasCost = gasCost.BuiltInCost.DCDTNFTCreate
 	e.gasConfig = gasCost.BaseOperationCost
 	e.mutExecution.Unlock()
 }
 
-// ProcessBuiltinFunction resolves DCT NFT create function call
+// ProcessBuiltinFunction resolves DCDT NFT create function call
 // Requires at least 7 arguments:
 // arg0 - token identifier
 // arg1 - initial quantity
@@ -100,14 +100,14 @@ func (e *dctNFTCreate) SetNewGasConfig(gasCost *vmcommon.GasCost) {
 // arg4 - hash
 // arg5 - attributes
 // arg6+ - multiple entries of URI (minimum 1)
-func (e *dctNFTCreate) ProcessBuiltinFunction(
+func (e *dcdtNFTCreate) ProcessBuiltinFunction(
 	acntSnd, _ vmcommon.UserAccountHandler,
 	vmInput *vmcommon.ContractCallInput,
 ) (*vmcommon.VMOutput, error) {
 	e.mutExecution.RLock()
 	defer e.mutExecution.RUnlock()
 
-	err := checkDCTNFTCreateBurnAddInput(acntSnd, vmInput, e.funcGasCost)
+	err := checkDCDTNFTCreateBurnAddInput(acntSnd, vmInput, e.funcGasCost)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +141,7 @@ func (e *dctNFTCreate) ProcessBuiltinFunction(
 	}
 
 	tokenID := vmInput.Arguments[0]
-	err = e.rolesHandler.CheckAllowedToExecute(accountWithRoles, vmInput.Arguments[0], []byte(core.DCTRoleNFTCreate))
+	err = e.rolesHandler.CheckAllowedToExecute(accountWithRoles, vmInput.Arguments[0], []byte(core.DCDTRoleNFTCreate))
 	if err != nil {
 		return nil, err
 	}
@@ -165,13 +165,13 @@ func (e *dctNFTCreate) ProcessBuiltinFunction(
 		return nil, fmt.Errorf("%w, invalid max royality value", ErrInvalidArguments)
 	}
 
-	dctTokenKey := append(e.keyPrefix, vmInput.Arguments[0]...)
+	dcdtTokenKey := append(e.keyPrefix, vmInput.Arguments[0]...)
 	quantity := big.NewInt(0).SetBytes(vmInput.Arguments[1])
 	if quantity.Cmp(zero) <= 0 {
 		return nil, fmt.Errorf("%w, invalid quantity", ErrInvalidArguments)
 	}
 	if quantity.Cmp(big.NewInt(1)) > 0 {
-		err = e.rolesHandler.CheckAllowedToExecute(accountWithRoles, vmInput.Arguments[0], []byte(core.DCTRoleNFTAddQuantity))
+		err = e.rolesHandler.CheckAllowedToExecute(accountWithRoles, vmInput.Arguments[0], []byte(core.DCDTRoleNFTAddQuantity))
 		if err != nil {
 			return nil, err
 		}
@@ -182,10 +182,10 @@ func (e *dctNFTCreate) ProcessBuiltinFunction(
 	}
 
 	nextNonce := nonce + 1
-	dctData := &dct.DCToken{
+	dcdtData := &dcdt.DCDigitalToken{
 		Type:  uint32(core.NonFungible),
 		Value: quantity,
-		TokenMetaData: &dct.MetaData{
+		TokenMetaData: &dcdt.MetaData{
 			Nonce:      nextNonce,
 			Name:       vmInput.Arguments[2],
 			Creator:    vmInput.CallerAddr,
@@ -196,11 +196,11 @@ func (e *dctNFTCreate) ProcessBuiltinFunction(
 		},
 	}
 
-	_, err = e.dctStorageHandler.SaveDCTNFTToken(accountWithRoles.AddressBytes(), accountWithRoles, dctTokenKey, nextNonce, dctData, true, vmInput.ReturnCallAfterError)
+	_, err = e.dcdtStorageHandler.SaveDCDTNFTToken(accountWithRoles.AddressBytes(), accountWithRoles, dcdtTokenKey, nextNonce, dcdtData, true, vmInput.ReturnCallAfterError)
 	if err != nil {
 		return nil, err
 	}
-	err = e.dctStorageHandler.AddToLiquiditySystemAcc(dctTokenKey, nextNonce, quantity)
+	err = e.dcdtStorageHandler.AddToLiquiditySystemAcc(dcdtTokenKey, nextNonce, quantity)
 	if err != nil {
 		return nil, err
 	}
@@ -223,17 +223,17 @@ func (e *dctNFTCreate) ProcessBuiltinFunction(
 		ReturnData:   [][]byte{big.NewInt(0).SetUint64(nextNonce).Bytes()},
 	}
 
-	dctDataBytes, err := e.marshaller.Marshal(dctData)
+	dcdtDataBytes, err := e.marshaller.Marshal(dcdtData)
 	if err != nil {
-		log.Warn("dctNFTCreate.ProcessBuiltinFunction: cannot marshall dct data for log", "error", err)
+		log.Warn("dcdtNFTCreate.ProcessBuiltinFunction: cannot marshall dcdt data for log", "error", err)
 	}
 
-	addDCTEntryInVMOutput(vmOutput, []byte(core.BuiltInFunctionDCTNFTCreate), vmInput.Arguments[0], nextNonce, quantity, vmInput.CallerAddr, dctDataBytes)
+	addDCDTEntryInVMOutput(vmOutput, []byte(core.BuiltInFunctionDCDTNFTCreate), vmInput.Arguments[0], nextNonce, quantity, vmInput.CallerAddr, dcdtDataBytes)
 
 	return vmOutput, nil
 }
 
-func (e *dctNFTCreate) getAccount(address []byte) (vmcommon.UserAccountHandler, error) {
+func (e *dcdtNFTCreate) getAccount(address []byte) (vmcommon.UserAccountHandler, error) {
 	account, err := e.accounts.LoadAccount(address)
 	if err != nil {
 		return nil, err
@@ -266,16 +266,16 @@ func saveLatestNonce(acnt vmcommon.UserAccountHandler, tokenID []byte, nonce uin
 	return acnt.AccountDataHandler().SaveKeyValue(nonceKey, big.NewInt(0).SetUint64(nonce).Bytes())
 }
 
-func computeDCTNFTTokenKey(dctTokenKey []byte, nonce uint64) []byte {
-	return append(dctTokenKey, big.NewInt(0).SetUint64(nonce).Bytes()...)
+func computeDCDTNFTTokenKey(dcdtTokenKey []byte, nonce uint64) []byte {
+	return append(dcdtTokenKey, big.NewInt(0).SetUint64(nonce).Bytes()...)
 }
 
-func checkDCTNFTCreateBurnAddInput(
+func checkDCDTNFTCreateBurnAddInput(
 	account vmcommon.UserAccountHandler,
 	vmInput *vmcommon.ContractCallInput,
 	funcGasCost uint64,
 ) error {
-	err := checkBasicDCTArguments(vmInput)
+	err := checkBasicDCDTArguments(vmInput)
 	if err != nil {
 		return err
 	}
@@ -296,6 +296,6 @@ func getNonceKey(tokenID []byte) []byte {
 }
 
 // IsInterfaceNil returns true if underlying object in nil
-func (e *dctNFTCreate) IsInterfaceNil() bool {
+func (e *dcdtNFTCreate) IsInterfaceNil() bool {
 	return e == nil
 }

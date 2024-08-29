@@ -7,53 +7,53 @@ import (
 	"testing"
 
 	"github.com/DharitriOne/drt-chain-core-go/core"
-	"github.com/DharitriOne/drt-chain-core-go/data/dct"
+	"github.com/DharitriOne/drt-chain-core-go/data/dcdt"
 	vmcommon "github.com/DharitriOne/drt-chain-vm-common-go"
 	"github.com/DharitriOne/drt-chain-vm-common-go/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewDCTLocalBurnFunc(t *testing.T) {
+func TestNewDCDTLocalBurnFunc(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name     string
-		argsFunc func() (c uint64, m vmcommon.Marshalizer, p vmcommon.ExtendedDCTGlobalSettingsHandler, r vmcommon.DCTRoleHandler, e vmcommon.EnableEpochsHandler)
+		argsFunc func() (c uint64, m vmcommon.Marshalizer, p vmcommon.ExtendedDCDTGlobalSettingsHandler, r vmcommon.DCDTRoleHandler, e vmcommon.EnableEpochsHandler)
 		exError  error
 	}{
 		{
 			name: "NilMarshalizer",
-			argsFunc: func() (c uint64, m vmcommon.Marshalizer, p vmcommon.ExtendedDCTGlobalSettingsHandler, r vmcommon.DCTRoleHandler, e vmcommon.EnableEpochsHandler) {
-				return 0, nil, &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{}
+			argsFunc: func() (c uint64, m vmcommon.Marshalizer, p vmcommon.ExtendedDCDTGlobalSettingsHandler, r vmcommon.DCDTRoleHandler, e vmcommon.EnableEpochsHandler) {
+				return 0, nil, &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{}
 			},
 			exError: ErrNilMarshalizer,
 		},
 		{
 			name: "NilGlobalSettingsHandler",
-			argsFunc: func() (c uint64, m vmcommon.Marshalizer, p vmcommon.ExtendedDCTGlobalSettingsHandler, r vmcommon.DCTRoleHandler, e vmcommon.EnableEpochsHandler) {
-				return 0, &mock.MarshalizerMock{}, nil, &mock.DCTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{}
+			argsFunc: func() (c uint64, m vmcommon.Marshalizer, p vmcommon.ExtendedDCDTGlobalSettingsHandler, r vmcommon.DCDTRoleHandler, e vmcommon.EnableEpochsHandler) {
+				return 0, &mock.MarshalizerMock{}, nil, &mock.DCDTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{}
 			},
 			exError: ErrNilGlobalSettingsHandler,
 		},
 		{
 			name: "NilRolesHandler",
-			argsFunc: func() (c uint64, m vmcommon.Marshalizer, p vmcommon.ExtendedDCTGlobalSettingsHandler, r vmcommon.DCTRoleHandler, e vmcommon.EnableEpochsHandler) {
+			argsFunc: func() (c uint64, m vmcommon.Marshalizer, p vmcommon.ExtendedDCDTGlobalSettingsHandler, r vmcommon.DCDTRoleHandler, e vmcommon.EnableEpochsHandler) {
 				return 0, &mock.MarshalizerMock{}, &mock.GlobalSettingsHandlerStub{}, nil, &mock.EnableEpochsHandlerStub{}
 			},
 			exError: ErrNilRolesHandler,
 		},
 		{
 			name: "NilEnableEpochsHandler",
-			argsFunc: func() (c uint64, m vmcommon.Marshalizer, p vmcommon.ExtendedDCTGlobalSettingsHandler, r vmcommon.DCTRoleHandler, e vmcommon.EnableEpochsHandler) {
-				return 0, &mock.MarshalizerMock{}, &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{}, nil
+			argsFunc: func() (c uint64, m vmcommon.Marshalizer, p vmcommon.ExtendedDCDTGlobalSettingsHandler, r vmcommon.DCDTRoleHandler, e vmcommon.EnableEpochsHandler) {
+				return 0, &mock.MarshalizerMock{}, &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{}, nil
 			},
 			exError: ErrNilEnableEpochsHandler,
 		},
 		{
 			name: "Ok",
-			argsFunc: func() (c uint64, m vmcommon.Marshalizer, p vmcommon.ExtendedDCTGlobalSettingsHandler, r vmcommon.DCTRoleHandler, e vmcommon.EnableEpochsHandler) {
-				return 0, &mock.MarshalizerMock{}, &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{}
+			argsFunc: func() (c uint64, m vmcommon.Marshalizer, p vmcommon.ExtendedDCDTGlobalSettingsHandler, r vmcommon.DCDTRoleHandler, e vmcommon.EnableEpochsHandler) {
+				return 0, &mock.MarshalizerMock{}, &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{}
 			},
 			exError: nil,
 		},
@@ -61,18 +61,18 @@ func TestNewDCTLocalBurnFunc(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := NewDCTLocalBurnFunc(tt.argsFunc())
+			_, err := NewDCDTLocalBurnFunc(tt.argsFunc())
 			require.Equal(t, err, tt.exError)
 		})
 	}
 }
 
-func TestDctLocalBurn_ProcessBuiltinFunction_CalledWithValueShouldErr(t *testing.T) {
+func TestDcdtLocalBurn_ProcessBuiltinFunction_CalledWithValueShouldErr(t *testing.T) {
 	t.Parallel()
 
-	dctLocalBurnF, _ := NewDCTLocalBurnFunc(0, &mock.MarshalizerMock{}, &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{})
+	dcdtLocalBurnF, _ := NewDCDTLocalBurnFunc(0, &mock.MarshalizerMock{}, &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{})
 
-	_, err := dctLocalBurnF.ProcessBuiltinFunction(&mock.AccountWrapMock{}, &mock.AccountWrapMock{}, &vmcommon.ContractCallInput{
+	_, err := dcdtLocalBurnF.ProcessBuiltinFunction(&mock.AccountWrapMock{}, &mock.AccountWrapMock{}, &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallValue: big.NewInt(1),
 		},
@@ -80,17 +80,17 @@ func TestDctLocalBurn_ProcessBuiltinFunction_CalledWithValueShouldErr(t *testing
 	require.Equal(t, ErrBuiltInFunctionCalledWithValue, err)
 }
 
-func TestDctLocalBurn_ProcessBuiltinFunction_CheckAllowToExecuteShouldErr(t *testing.T) {
+func TestDcdtLocalBurn_ProcessBuiltinFunction_CheckAllowToExecuteShouldErr(t *testing.T) {
 	t.Parallel()
 
 	localErr := errors.New("local err")
-	dctLocalBurnF, _ := NewDCTLocalBurnFunc(0, &mock.MarshalizerMock{}, &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{
+	dcdtLocalBurnF, _ := NewDCDTLocalBurnFunc(0, &mock.MarshalizerMock{}, &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{
 		CheckAllowedToExecuteCalled: func(account vmcommon.UserAccountHandler, tokenID []byte, action []byte) error {
 			return localErr
 		},
 	}, &mock.EnableEpochsHandlerStub{})
 
-	_, err := dctLocalBurnF.ProcessBuiltinFunction(&mock.AccountWrapMock{}, &mock.AccountWrapMock{}, &vmcommon.ContractCallInput{
+	_, err := dcdtLocalBurnF.ProcessBuiltinFunction(&mock.AccountWrapMock{}, &mock.AccountWrapMock{}, &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallValue: big.NewInt(0),
 			Arguments: [][]byte{[]byte("arg1"), []byte("arg2")},
@@ -99,17 +99,17 @@ func TestDctLocalBurn_ProcessBuiltinFunction_CheckAllowToExecuteShouldErr(t *tes
 	require.Equal(t, localErr, err)
 }
 
-func TestDctLocalBurn_ProcessBuiltinFunction_CannotAddToDctBalanceShouldErr(t *testing.T) {
+func TestDcdtLocalBurn_ProcessBuiltinFunction_CannotAddToDcdtBalanceShouldErr(t *testing.T) {
 	t.Parallel()
 
-	dctLocalBurnF, _ := NewDCTLocalBurnFunc(0, &mock.MarshalizerMock{}, &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{
+	dcdtLocalBurnF, _ := NewDCDTLocalBurnFunc(0, &mock.MarshalizerMock{}, &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{
 		CheckAllowedToExecuteCalled: func(account vmcommon.UserAccountHandler, tokenID []byte, action []byte) error {
 			return nil
 		},
 	}, &mock.EnableEpochsHandlerStub{})
 
 	localErr := errors.New("local err")
-	_, err := dctLocalBurnF.ProcessBuiltinFunction(&mock.UserAccountStub{
+	_, err := dcdtLocalBurnF.ProcessBuiltinFunction(&mock.UserAccountStub{
 		AccountDataHandlerCalled: func() vmcommon.AccountDataHandler {
 			return &mock.DataTrieTrackerStub{
 				RetrieveValueCalled: func(_ []byte) ([]byte, uint32, error) {
@@ -126,25 +126,25 @@ func TestDctLocalBurn_ProcessBuiltinFunction_CannotAddToDctBalanceShouldErr(t *t
 	require.Equal(t, ErrInsufficientFunds, err)
 }
 
-func TestDctLocalBurn_ProcessBuiltinFunction_ValueTooLong(t *testing.T) {
+func TestDcdtLocalBurn_ProcessBuiltinFunction_ValueTooLong(t *testing.T) {
 	t.Parallel()
 
 	marshaller := &mock.MarshalizerMock{}
-	dctRoleHandler := &mock.DCTRoleHandlerStub{
+	dcdtRoleHandler := &mock.DCDTRoleHandlerStub{
 		CheckAllowedToExecuteCalled: func(account vmcommon.UserAccountHandler, tokenID []byte, action []byte) error {
-			assert.Equal(t, core.DCTRoleLocalBurn, string(action))
+			assert.Equal(t, core.DCDTRoleLocalBurn, string(action))
 			return nil
 		},
 	}
-	dctLocalBurnF, _ := NewDCTLocalBurnFunc(50, marshaller, &mock.GlobalSettingsHandlerStub{}, dctRoleHandler, &mock.EnableEpochsHandlerStub{})
+	dcdtLocalBurnF, _ := NewDCDTLocalBurnFunc(50, marshaller, &mock.GlobalSettingsHandlerStub{}, dcdtRoleHandler, &mock.EnableEpochsHandlerStub{})
 
 	sndAccount := &mock.UserAccountStub{
 		AccountDataHandlerCalled: func() vmcommon.AccountDataHandler {
 			return &mock.DataTrieTrackerStub{
 				RetrieveValueCalled: func(_ []byte) ([]byte, uint32, error) {
-					dctData := &dct.DCToken{Value: big.NewInt(100)}
-					serializedDctData, err := marshaller.Marshal(dctData)
-					return serializedDctData, 0, err
+					dcdtData := &dcdt.DCDigitalToken{Value: big.NewInt(100)}
+					serializedDcdtData, err := marshaller.Marshal(dcdtData)
+					return serializedDcdtData, 0, err
 				},
 			}
 		},
@@ -152,7 +152,7 @@ func TestDctLocalBurn_ProcessBuiltinFunction_ValueTooLong(t *testing.T) {
 
 	bigValueStr := "1" + strings.Repeat("0", 1000)
 	bigValue, _ := big.NewInt(0).SetString(bigValueStr, 10)
-	vmOutput, err := dctLocalBurnF.ProcessBuiltinFunction(sndAccount, &mock.AccountWrapMock{}, &vmcommon.ContractCallInput{
+	vmOutput, err := dcdtLocalBurnF.ProcessBuiltinFunction(sndAccount, &mock.AccountWrapMock{}, &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallValue:   big.NewInt(0),
 			Arguments:   [][]byte{[]byte("arg1"), bigValue.Bytes()},
@@ -163,52 +163,52 @@ func TestDctLocalBurn_ProcessBuiltinFunction_ValueTooLong(t *testing.T) {
 	require.Empty(t, vmOutput)
 
 	// try again with the flag enabled
-	dctLocalBurnF.enableEpochsHandler = &mock.EnableEpochsHandlerStub{
+	dcdtLocalBurnF.enableEpochsHandler = &mock.EnableEpochsHandlerStub{
 		IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
 			return flag == ConsistentTokensValuesLengthCheckFlag
 		},
 	}
-	vmOutput, err = dctLocalBurnF.ProcessBuiltinFunction(sndAccount, &mock.AccountWrapMock{}, &vmcommon.ContractCallInput{
+	vmOutput, err = dcdtLocalBurnF.ProcessBuiltinFunction(sndAccount, &mock.AccountWrapMock{}, &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallValue:   big.NewInt(0),
 			Arguments:   [][]byte{[]byte("arg1"), bigValue.Bytes()},
 			GasProvided: 500,
 		},
 	})
-	require.Equal(t, "invalid arguments to process built-in function: max length for dct local burn value is 100", err.Error())
+	require.Equal(t, "invalid arguments to process built-in function: max length for dcdt local burn value is 100", err.Error())
 	require.Empty(t, vmOutput)
 }
 
-func TestDctLocalBurn_ProcessBuiltinFunction_ShouldWork(t *testing.T) {
+func TestDcdtLocalBurn_ProcessBuiltinFunction_ShouldWork(t *testing.T) {
 	t.Parallel()
 
 	marshaller := &mock.MarshalizerMock{}
-	dctRoleHandler := &mock.DCTRoleHandlerStub{
+	dcdtRoleHandler := &mock.DCDTRoleHandlerStub{
 		CheckAllowedToExecuteCalled: func(account vmcommon.UserAccountHandler, tokenID []byte, action []byte) error {
-			assert.Equal(t, core.DCTRoleLocalBurn, string(action))
+			assert.Equal(t, core.DCDTRoleLocalBurn, string(action))
 			return nil
 		},
 	}
-	dctLocalBurnF, _ := NewDCTLocalBurnFunc(50, marshaller, &mock.GlobalSettingsHandlerStub{}, dctRoleHandler, &mock.EnableEpochsHandlerStub{})
+	dcdtLocalBurnF, _ := NewDCDTLocalBurnFunc(50, marshaller, &mock.GlobalSettingsHandlerStub{}, dcdtRoleHandler, &mock.EnableEpochsHandlerStub{})
 
 	sndAccout := &mock.UserAccountStub{
 		AccountDataHandlerCalled: func() vmcommon.AccountDataHandler {
 			return &mock.DataTrieTrackerStub{
 				RetrieveValueCalled: func(_ []byte) ([]byte, uint32, error) {
-					dctData := &dct.DCToken{Value: big.NewInt(100)}
-					serializedDctData, err := marshaller.Marshal(dctData)
-					return serializedDctData, 0, err
+					dcdtData := &dcdt.DCDigitalToken{Value: big.NewInt(100)}
+					serializedDcdtData, err := marshaller.Marshal(dcdtData)
+					return serializedDcdtData, 0, err
 				},
 				SaveKeyValueCalled: func(key []byte, value []byte) error {
-					dctData := &dct.DCToken{}
-					_ = marshaller.Unmarshal(dctData, value)
-					require.Equal(t, big.NewInt(99), dctData.Value)
+					dcdtData := &dcdt.DCDigitalToken{}
+					_ = marshaller.Unmarshal(dcdtData, value)
+					require.Equal(t, big.NewInt(99), dcdtData.Value)
 					return nil
 				},
 			}
 		},
 	}
-	vmOutput, err := dctLocalBurnF.ProcessBuiltinFunction(sndAccout, &mock.AccountWrapMock{}, &vmcommon.ContractCallInput{
+	vmOutput, err := dcdtLocalBurnF.ProcessBuiltinFunction(sndAccout, &mock.AccountWrapMock{}, &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallValue:   big.NewInt(0),
 			Arguments:   [][]byte{[]byte("arg1"), big.NewInt(1).Bytes()},
@@ -222,7 +222,7 @@ func TestDctLocalBurn_ProcessBuiltinFunction_ShouldWork(t *testing.T) {
 		GasRemaining: 450,
 		Logs: []*vmcommon.LogEntry{
 			{
-				Identifier: []byte("DCTLocalBurn"),
+				Identifier: []byte("DCDTLocalBurn"),
 				Address:    nil,
 				Topics:     [][]byte{[]byte("arg1"), big.NewInt(0).Bytes(), big.NewInt(1).Bytes()},
 				Data:       nil,
@@ -232,15 +232,15 @@ func TestDctLocalBurn_ProcessBuiltinFunction_ShouldWork(t *testing.T) {
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
-func TestDctLocalBurn_ProcessBuiltinFunction_WithGlobalBurn(t *testing.T) {
+func TestDcdtLocalBurn_ProcessBuiltinFunction_WithGlobalBurn(t *testing.T) {
 	t.Parallel()
 
 	marshaller := &mock.MarshalizerMock{}
-	dctLocalBurnF, _ := NewDCTLocalBurnFunc(50, marshaller, &mock.GlobalSettingsHandlerStub{
+	dcdtLocalBurnF, _ := NewDCDTLocalBurnFunc(50, marshaller, &mock.GlobalSettingsHandlerStub{
 		IsBurnForAllCalled: func(token []byte) bool {
 			return true
 		},
-	}, &mock.DCTRoleHandlerStub{
+	}, &mock.DCDTRoleHandlerStub{
 		CheckAllowedToExecuteCalled: func(account vmcommon.UserAccountHandler, tokenID []byte, action []byte) error {
 			return errors.New("no role")
 		},
@@ -250,20 +250,20 @@ func TestDctLocalBurn_ProcessBuiltinFunction_WithGlobalBurn(t *testing.T) {
 		AccountDataHandlerCalled: func() vmcommon.AccountDataHandler {
 			return &mock.DataTrieTrackerStub{
 				RetrieveValueCalled: func(_ []byte) ([]byte, uint32, error) {
-					dctData := &dct.DCToken{Value: big.NewInt(100)}
-					serializedDctData, err := marshaller.Marshal(dctData)
-					return serializedDctData, 0, err
+					dcdtData := &dcdt.DCDigitalToken{Value: big.NewInt(100)}
+					serializedDcdtData, err := marshaller.Marshal(dcdtData)
+					return serializedDcdtData, 0, err
 				},
 				SaveKeyValueCalled: func(key []byte, value []byte) error {
-					dctData := &dct.DCToken{}
-					_ = marshaller.Unmarshal(dctData, value)
-					require.Equal(t, big.NewInt(99), dctData.Value)
+					dcdtData := &dcdt.DCDigitalToken{}
+					_ = marshaller.Unmarshal(dcdtData, value)
+					require.Equal(t, big.NewInt(99), dcdtData.Value)
 					return nil
 				},
 			}
 		},
 	}
-	vmOutput, err := dctLocalBurnF.ProcessBuiltinFunction(sndAccout, &mock.AccountWrapMock{}, &vmcommon.ContractCallInput{
+	vmOutput, err := dcdtLocalBurnF.ProcessBuiltinFunction(sndAccout, &mock.AccountWrapMock{}, &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallValue:   big.NewInt(0),
 			Arguments:   [][]byte{[]byte("arg1"), big.NewInt(1).Bytes()},
@@ -277,7 +277,7 @@ func TestDctLocalBurn_ProcessBuiltinFunction_WithGlobalBurn(t *testing.T) {
 		GasRemaining: 450,
 		Logs: []*vmcommon.LogEntry{
 			{
-				Identifier: []byte("DCTLocalBurn"),
+				Identifier: []byte("DCDTLocalBurn"),
 				Address:    nil,
 				Topics:     [][]byte{[]byte("arg1"), big.NewInt(0).Bytes(), big.NewInt(1).Bytes()},
 				Data:       nil,
@@ -287,16 +287,16 @@ func TestDctLocalBurn_ProcessBuiltinFunction_WithGlobalBurn(t *testing.T) {
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
-func TestDctLocalBurn_SetNewGasConfig(t *testing.T) {
+func TestDcdtLocalBurn_SetNewGasConfig(t *testing.T) {
 	t.Parallel()
 
-	dctLocalBurnF, _ := NewDCTLocalBurnFunc(0, &mock.MarshalizerMock{}, &mock.GlobalSettingsHandlerStub{}, &mock.DCTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{})
+	dcdtLocalBurnF, _ := NewDCDTLocalBurnFunc(0, &mock.MarshalizerMock{}, &mock.GlobalSettingsHandlerStub{}, &mock.DCDTRoleHandlerStub{}, &mock.EnableEpochsHandlerStub{})
 
-	dctLocalBurnF.SetNewGasConfig(&vmcommon.GasCost{BuiltInCost: vmcommon.BuiltInCost{
-		DCTLocalBurn: 500},
+	dcdtLocalBurnF.SetNewGasConfig(&vmcommon.GasCost{BuiltInCost: vmcommon.BuiltInCost{
+		DCDTLocalBurn: 500},
 	})
 
-	require.Equal(t, uint64(500), dctLocalBurnF.funcGasCost)
+	require.Equal(t, uint64(500), dcdtLocalBurnF.funcGasCost)
 }
 
 func TestCheckInputArgumentsForLocalAction_InvalidRecipientAddr(t *testing.T) {

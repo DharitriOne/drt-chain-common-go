@@ -5,31 +5,31 @@ import (
 	"github.com/DharitriOne/drt-chain-core-go/core/sharding"
 )
 
-func (odp *operationDataFieldParser) parseMultiDCTNFTTransfer(args [][]byte, function string, sender, receiver []byte, numOfShards uint32) *ResponseParseData {
-	responseParse, parsedDCTTransfers, ok := odp.extractDCTData(args, function, sender, receiver)
+func (odp *operationDataFieldParser) parseMultiDCDTNFTTransfer(args [][]byte, function string, sender, receiver []byte, numOfShards uint32) *ResponseParseData {
+	responseParse, parsedDCDTTransfers, ok := odp.extractDCDTData(args, function, sender, receiver)
 	if !ok {
 		return responseParse
 	}
-	if core.IsSmartContractAddress(parsedDCTTransfers.RcvAddr) && isASCIIString(parsedDCTTransfers.CallFunction) {
-		responseParse.Function = parsedDCTTransfers.CallFunction
+	if core.IsSmartContractAddress(parsedDCDTTransfers.RcvAddr) && isASCIIString(parsedDCDTTransfers.CallFunction) {
+		responseParse.Function = parsedDCDTTransfers.CallFunction
 	}
 
-	receiverShardID := sharding.ComputeShardID(parsedDCTTransfers.RcvAddr, numOfShards)
-	for _, dctTransferData := range parsedDCTTransfers.DCTTransfers {
-		if !isASCIIString(string(dctTransferData.DCTTokenName)) {
+	receiverShardID := sharding.ComputeShardID(parsedDCDTTransfers.RcvAddr, numOfShards)
+	for _, dcdtTransferData := range parsedDCDTTransfers.DCDTTransfers {
+		if !isASCIIString(string(dcdtTransferData.DCDTTokenName)) {
 			return &ResponseParseData{
 				Operation: function,
 			}
 		}
 
-		token := string(dctTransferData.DCTTokenName)
-		if dctTransferData.DCTTokenNonce != 0 {
-			token = computeTokenIdentifier(token, dctTransferData.DCTTokenNonce)
+		token := string(dcdtTransferData.DCDTTokenName)
+		if dcdtTransferData.DCDTTokenNonce != 0 {
+			token = computeTokenIdentifier(token, dcdtTransferData.DCDTTokenNonce)
 		}
 
 		responseParse.Tokens = append(responseParse.Tokens, token)
-		responseParse.DCTValues = append(responseParse.DCTValues, dctTransferData.DCTValue.String())
-		responseParse.Receivers = append(responseParse.Receivers, parsedDCTTransfers.RcvAddr)
+		responseParse.DCDTValues = append(responseParse.DCDTValues, dcdtTransferData.DCDTValue.String())
+		responseParse.Receivers = append(responseParse.Receivers, parsedDCDTTransfers.RcvAddr)
 		responseParse.ReceiversShardID = append(responseParse.ReceiversShardID, receiverShardID)
 	}
 

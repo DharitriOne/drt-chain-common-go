@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	dctIdentifierSeparator  = "-"
-	dctRandomSequenceLength = 6
+	dcdtIdentifierSeparator  = "-"
+	dcdtRandomSequenceLength = 6
 )
 
 // TopicTokenData groups data that will end up in Topics section of LogEntry
@@ -21,7 +21,7 @@ type TopicTokenData struct {
 	Value   *big.Int
 }
 
-func addDCTEntryForTransferInVMOutput(
+func addDCDTEntryForTransferInVMOutput(
 	vmInput *vmcommon.ContractCallInput,
 	vmOutput *vmcommon.VMOutput,
 	identifier []byte,
@@ -50,8 +50,8 @@ func addDCTEntryForTransferInVMOutput(
 	vmOutput.Logs = append(vmOutput.Logs, logEntry)
 }
 
-func addDCTEntryInVMOutput(vmOutput *vmcommon.VMOutput, identifier []byte, tokenID []byte, nonce uint64, value *big.Int, args ...[]byte) {
-	entry := newEntryForDCT(identifier, tokenID, nonce, value, args...)
+func addDCDTEntryInVMOutput(vmOutput *vmcommon.VMOutput, identifier []byte, tokenID []byte, nonce uint64, value *big.Int, args ...[]byte) {
+	entry := newEntryForDCDT(identifier, tokenID, nonce, value, args...)
 
 	if vmOutput.Logs == nil {
 		vmOutput.Logs = make([]*vmcommon.LogEntry, 0, 1)
@@ -60,7 +60,7 @@ func addDCTEntryInVMOutput(vmOutput *vmcommon.VMOutput, identifier []byte, token
 	vmOutput.Logs = append(vmOutput.Logs, entry)
 }
 
-func newEntryForDCT(identifier, tokenID []byte, nonce uint64, value *big.Int, args ...[]byte) *vmcommon.LogEntry {
+func newEntryForDCDT(identifier, tokenID []byte, nonce uint64, value *big.Int, args ...[]byte) *vmcommon.LogEntry {
 	nonceBig := big.NewInt(0).SetUint64(nonce)
 
 	logEntry := &vmcommon.LogEntry{
@@ -79,18 +79,18 @@ func newEntryForDCT(identifier, tokenID []byte, nonce uint64, value *big.Int, ar
 	return logEntry
 }
 
-func extractTokenIdentifierAndNonceDCTWipe(args []byte) ([]byte, uint64) {
-	argsSplit := bytes.Split(args, []byte(dctIdentifierSeparator))
+func extractTokenIdentifierAndNonceDCDTWipe(args []byte) ([]byte, uint64) {
+	argsSplit := bytes.Split(args, []byte(dcdtIdentifierSeparator))
 	if len(argsSplit) < 2 {
 		return args, 0
 	}
 
-	if len(argsSplit[1]) <= dctRandomSequenceLength {
+	if len(argsSplit[1]) <= dcdtRandomSequenceLength {
 		return args, 0
 	}
 
-	identifier := []byte(fmt.Sprintf("%s-%s", argsSplit[0], argsSplit[1][:dctRandomSequenceLength]))
-	nonce := big.NewInt(0).SetBytes(argsSplit[1][dctRandomSequenceLength:])
+	identifier := []byte(fmt.Sprintf("%s-%s", argsSplit[0], argsSplit[1][:dcdtRandomSequenceLength]))
+	nonce := big.NewInt(0).SetBytes(argsSplit[1][dcdtRandomSequenceLength:])
 
 	return identifier, nonce.Uint64()
 }

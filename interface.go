@@ -6,7 +6,7 @@ import (
 	"github.com/DharitriOne/drt-chain-core-go/core"
 	"github.com/DharitriOne/drt-chain-core-go/core/closing"
 	"github.com/DharitriOne/drt-chain-core-go/data"
-	"github.com/DharitriOne/drt-chain-core-go/data/dct"
+	"github.com/DharitriOne/drt-chain-core-go/data/dcdt"
 )
 
 // FunctionNames (alias) is a map of function names
@@ -93,8 +93,8 @@ type BlockchainHook interface {
 	// ClearCompiledCodes clears the cache and storage of compiled codes
 	ClearCompiledCodes()
 
-	// GetDCTToken loads the DCT digital token for the given key
-	GetDCTToken(address []byte, tokenID []byte, nonce uint64) (*dct.DCToken, error)
+	// GetDCDTToken loads the DCDT digital token for the given key
+	GetDCDTToken(address []byte, tokenID []byte, nonce uint64) (*dcdt.DCDigitalToken, error)
 
 	// IsPaused returns true if the tokenID is paused globally
 	IsPaused(tokenID []byte) bool
@@ -198,24 +198,24 @@ type Marshalizer interface {
 	IsInterfaceNil() bool
 }
 
-// DCTGlobalSettingsHandler provides global settings functions for an DCT token
-type DCTGlobalSettingsHandler interface {
-	IsPaused(dctTokenKey []byte) bool
-	IsLimitedTransfer(dctTokenKey []byte) bool
+// DCDTGlobalSettingsHandler provides global settings functions for an DCDT token
+type DCDTGlobalSettingsHandler interface {
+	IsPaused(dcdtTokenKey []byte) bool
+	IsLimitedTransfer(dcdtTokenKey []byte) bool
 	IsInterfaceNil() bool
 }
 
-// ExtendedDCTGlobalSettingsHandler provides global settings functions for an DCT token
-type ExtendedDCTGlobalSettingsHandler interface {
-	IsPaused(dctTokenKey []byte) bool
-	IsLimitedTransfer(dctTokenKey []byte) bool
-	IsBurnForAll(dctTokenKey []byte) bool
+// ExtendedDCDTGlobalSettingsHandler provides global settings functions for an DCDT token
+type ExtendedDCDTGlobalSettingsHandler interface {
+	IsPaused(dcdtTokenKey []byte) bool
+	IsLimitedTransfer(dcdtTokenKey []byte) bool
+	IsBurnForAll(dcdtTokenKey []byte) bool
 	IsSenderOrDestinationWithTransferRole(sender, destination, tokenID []byte) bool
 	IsInterfaceNil() bool
 }
 
-// DCTRoleHandler provides IsAllowedToExecute function for an DCT
-type DCTRoleHandler interface {
+// DCDTRoleHandler provides IsAllowedToExecute function for an DCDT
+type DCDTRoleHandler interface {
 	CheckAllowedToExecute(account UserAccountHandler, tokenID []byte, action []byte) error
 	IsInterfaceNil() bool
 }
@@ -295,27 +295,27 @@ type RoundNotifier interface {
 	IsInterfaceNil() bool
 }
 
-// DCTTransferParser can parse single and multi DCT / NFT transfers
-type DCTTransferParser interface {
-	ParseDCTTransfers(sndAddr []byte, rcvAddr []byte, function string, args [][]byte) (*ParsedDCTTransfers, error)
+// DCDTTransferParser can parse single and multi DCDT / NFT transfers
+type DCDTTransferParser interface {
+	ParseDCDTTransfers(sndAddr []byte, rcvAddr []byte, function string, args [][]byte) (*ParsedDCDTTransfers, error)
 	IsInterfaceNil() bool
 }
 
-// DCTNFTStorageHandler will handle the storage for the nft metadata
-type DCTNFTStorageHandler interface {
-	SaveDCTNFTToken(senderAddress []byte, acnt UserAccountHandler, dctTokenKey []byte, nonce uint64, dctData *dct.DCToken, mustUpdateAllFields bool, isReturnWithError bool) ([]byte, error)
-	GetDCTNFTTokenOnSender(acnt UserAccountHandler, dctTokenKey []byte, nonce uint64) (*dct.DCToken, error)
-	GetDCTNFTTokenOnDestination(acnt UserAccountHandler, dctTokenKey []byte, nonce uint64) (*dct.DCToken, bool, error)
-	GetDCTNFTTokenOnDestinationWithCustomSystemAccount(accnt UserAccountHandler, dctTokenKey []byte, nonce uint64, systemAccount UserAccountHandler) (*dct.DCToken, bool, error)
+// DCDTNFTStorageHandler will handle the storage for the nft metadata
+type DCDTNFTStorageHandler interface {
+	SaveDCDTNFTToken(senderAddress []byte, acnt UserAccountHandler, dcdtTokenKey []byte, nonce uint64, dcdtData *dcdt.DCDigitalToken, mustUpdateAllFields bool, isReturnWithError bool) ([]byte, error)
+	GetDCDTNFTTokenOnSender(acnt UserAccountHandler, dcdtTokenKey []byte, nonce uint64) (*dcdt.DCDigitalToken, error)
+	GetDCDTNFTTokenOnDestination(acnt UserAccountHandler, dcdtTokenKey []byte, nonce uint64) (*dcdt.DCDigitalToken, bool, error)
+	GetDCDTNFTTokenOnDestinationWithCustomSystemAccount(accnt UserAccountHandler, dcdtTokenKey []byte, nonce uint64, systemAccount UserAccountHandler) (*dcdt.DCDigitalToken, bool, error)
 	WasAlreadySentToDestinationShardAndUpdateState(tickerID []byte, nonce uint64, dstAddress []byte) (bool, error)
 	SaveNFTMetaDataToSystemAccount(tx data.TransactionHandler) error
-	AddToLiquiditySystemAcc(dctTokenKey []byte, nonce uint64, transferValue *big.Int) error
+	AddToLiquiditySystemAcc(dcdtTokenKey []byte, nonce uint64, transferValue *big.Int) error
 	IsInterfaceNil() bool
 }
 
-// SimpleDCTNFTStorageHandler will handle get of DCT data and save metadata to system acc
-type SimpleDCTNFTStorageHandler interface {
-	GetDCTNFTTokenOnDestination(accnt UserAccountHandler, dctTokenKey []byte, nonce uint64) (*dct.DCToken, bool, error)
+// SimpleDCDTNFTStorageHandler will handle get of DCDT data and save metadata to system acc
+type SimpleDCDTNFTStorageHandler interface {
+	GetDCDTNFTTokenOnDestination(accnt UserAccountHandler, dcdtTokenKey []byte, nonce uint64) (*dcdt.DCDigitalToken, bool, error)
 	SaveNFTMetaDataToSystemAccount(tx data.TransactionHandler) error
 	IsInterfaceNil() bool
 }
@@ -329,15 +329,15 @@ type CallArgsParser interface {
 
 // BuiltInFunctionFactory will handle built-in functions and components
 type BuiltInFunctionFactory interface {
-	DCTGlobalSettingsHandler() DCTGlobalSettingsHandler
-	NFTStorageHandler() SimpleDCTNFTStorageHandler
+	DCDTGlobalSettingsHandler() DCDTGlobalSettingsHandler
+	NFTStorageHandler() SimpleDCDTNFTStorageHandler
 	BuiltInFunctionContainer() BuiltInFunctionContainer
 	SetPayableHandler(handler PayableHandler) error
 	CreateBuiltInFunctionContainer() error
 	IsInterfaceNil() bool
 }
 
-// PayableChecker will handle checking if transfer can happen of DCT tokens towards destination
+// PayableChecker will handle checking if transfer can happen of DCDT tokens towards destination
 type PayableChecker interface {
 	CheckPayable(vmInput *ContractCallInput, dstAddress []byte, minLenArguments int) error
 	DetermineIsSCCallAfter(vmInput *ContractCallInput, destAddress []byte, minLenArguments int) bool

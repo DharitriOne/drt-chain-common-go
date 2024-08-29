@@ -18,11 +18,11 @@ const (
 	OperationTransfer = `transfer`
 	operationDeploy   = `scDeploy`
 
-	minArgumentsQuantityOperationDCT = 2
-	minArgumentsQuantityOperationNFT = 3
-	numArgsRelayedV2                 = 4
-	receiverAddressIndexRelayedV2    = 0
-	dataFieldIndexRelayedV2          = 2
+	minArgumentsQuantityOperationDCDT = 2
+	minArgumentsQuantityOperationNFT  = 3
+	numArgsRelayedV2                  = 4
+	receiverAddressIndexRelayedV2     = 0
+	dataFieldIndexRelayedV2           = 2
 
 	argsTokenPosition                   = 0
 	argsNoncePosition                   = 1
@@ -35,9 +35,9 @@ var errInvalidAddressLength = errors.New("invalid address length")
 type operationDataFieldParser struct {
 	builtInFunctionsList []string
 
-	addressLength     int
-	argsParser        vmcommon.CallArgsParser
-	dctTransferParser vmcommon.DCTTransferParser
+	addressLength      int
+	argsParser         vmcommon.CallArgsParser
+	dcdtTransferParser vmcommon.DCDTTransferParser
 }
 
 // NewOperationDataFieldParser will return a new instance of operationDataFieldParser
@@ -50,14 +50,14 @@ func NewOperationDataFieldParser(args *ArgsOperationDataFieldParser) (*operation
 	}
 
 	argsParser := parsers.NewCallArgsParser()
-	dctTransferParser, err := parsers.NewDCTTransferParser(args.Marshalizer)
+	dcdtTransferParser, err := parsers.NewDCDTTransferParser(args.Marshalizer)
 	if err != nil {
 		return nil, err
 	}
 
 	return &operationDataFieldParser{
 		argsParser:           argsParser,
-		dctTransferParser:    dctTransferParser,
+		dcdtTransferParser:   dcdtTransferParser,
 		addressLength:        args.AddressLength,
 		builtInFunctionsList: getAllBuiltInFunctions(),
 	}, nil
@@ -85,17 +85,17 @@ func (odp *operationDataFieldParser) parse(dataField []byte, sender, receiver []
 	}
 
 	switch function {
-	case core.BuiltInFunctionDCTTransfer:
-		return odp.parseSingleDCTTransfer(args, function, sender, receiver)
-	case core.BuiltInFunctionDCTNFTTransfer:
-		return odp.parseSingleDCTNFTTransfer(args, function, sender, receiver, numOfShards)
-	case core.BuiltInFunctionMultiDCTNFTTransfer:
-		return odp.parseMultiDCTNFTTransfer(args, function, sender, receiver, numOfShards)
-	case core.BuiltInFunctionDCTLocalBurn, core.BuiltInFunctionDCTLocalMint:
-		return parseQuantityOperationDCT(args, function)
-	case core.BuiltInFunctionDCTWipe, core.BuiltInFunctionDCTFreeze, core.BuiltInFunctionDCTUnFreeze:
-		return parseBlockingOperationDCT(args, function)
-	case core.BuiltInFunctionDCTNFTCreate, core.BuiltInFunctionDCTNFTBurn, core.BuiltInFunctionDCTNFTAddQuantity:
+	case core.BuiltInFunctionDCDTTransfer:
+		return odp.parseSingleDCDTTransfer(args, function, sender, receiver)
+	case core.BuiltInFunctionDCDTNFTTransfer:
+		return odp.parseSingleDCDTNFTTransfer(args, function, sender, receiver, numOfShards)
+	case core.BuiltInFunctionMultiDCDTNFTTransfer:
+		return odp.parseMultiDCDTNFTTransfer(args, function, sender, receiver, numOfShards)
+	case core.BuiltInFunctionDCDTLocalBurn, core.BuiltInFunctionDCDTLocalMint:
+		return parseQuantityOperationDCDT(args, function)
+	case core.BuiltInFunctionDCDTWipe, core.BuiltInFunctionDCDTFreeze, core.BuiltInFunctionDCDTUnFreeze:
+		return parseBlockingOperationDCDT(args, function)
+	case core.BuiltInFunctionDCDTNFTCreate, core.BuiltInFunctionDCDTNFTBurn, core.BuiltInFunctionDCDTNFTAddQuantity:
 		return parseQuantityOperationNFT(args, function)
 	case core.RelayedTransaction, core.RelayedTransactionV2:
 		if ignoreRelayed {
@@ -139,7 +139,7 @@ func (odp *operationDataFieldParser) parseRelayed(function string, args [][]byte
 
 	receivers := [][]byte{tx.RcvAddr}
 	receiversShardID := []uint32{sharding.ComputeShardID(tx.RcvAddr, numOfShards)}
-	if res.Operation == core.BuiltInFunctionMultiDCTNFTTransfer || res.Operation == core.BuiltInFunctionDCTNFTTransfer {
+	if res.Operation == core.BuiltInFunctionMultiDCDTNFTTransfer || res.Operation == core.BuiltInFunctionDCDTNFTTransfer {
 		receivers = res.Receivers
 		receiversShardID = res.ReceiversShardID
 	}
@@ -147,7 +147,7 @@ func (odp *operationDataFieldParser) parseRelayed(function string, args [][]byte
 	return &ResponseParseData{
 		Operation:        res.Operation,
 		Function:         res.Function,
-		DCTValues:        res.DCTValues,
+		DCDTValues:       res.DCDTValues,
 		Tokens:           res.Tokens,
 		Receivers:        receivers,
 		ReceiversShardID: receiversShardID,
@@ -176,7 +176,7 @@ func extractInnerTx(function string, args [][]byte, receiver []byte) (*transacti
 	return tx, true
 }
 
-func parseBlockingOperationDCT(args [][]byte, funcName string) *ResponseParseData {
+func parseBlockingOperationDCDT(args [][]byte, funcName string) *ResponseParseData {
 	responseData := &ResponseParseData{
 		Operation: funcName,
 	}
@@ -198,12 +198,12 @@ func parseBlockingOperationDCT(args [][]byte, funcName string) *ResponseParseDat
 	return responseData
 }
 
-func parseQuantityOperationDCT(args [][]byte, funcName string) *ResponseParseData {
+func parseQuantityOperationDCDT(args [][]byte, funcName string) *ResponseParseData {
 	responseData := &ResponseParseData{
 		Operation: funcName,
 	}
 
-	if len(args) < minArgumentsQuantityOperationDCT {
+	if len(args) < minArgumentsQuantityOperationDCDT {
 		return responseData
 	}
 
@@ -213,7 +213,7 @@ func parseQuantityOperationDCT(args [][]byte, funcName string) *ResponseParseDat
 	}
 
 	responseData.Tokens = append(responseData.Tokens, token)
-	responseData.DCTValues = append(responseData.DCTValues, big.NewInt(0).SetBytes(args[argsValuePositionFungible]).String())
+	responseData.DCDTValues = append(responseData.DCDTValues, big.NewInt(0).SetBytes(args[argsValuePositionFungible]).String())
 
 	return responseData
 }
@@ -236,12 +236,12 @@ func parseQuantityOperationNFT(args [][]byte, funcName string) *ResponseParseDat
 	tokenIdentifier := computeTokenIdentifier(token, nonce)
 
 	value := big.NewInt(0).SetBytes(args[argsValuePositionNonAndSemiFungible]).String()
-	if funcName == core.BuiltInFunctionDCTNFTCreate {
+	if funcName == core.BuiltInFunctionDCDTNFTCreate {
 		value = big.NewInt(0).SetBytes(args[argsValuePositionNonAndSemiFungible-1]).String()
 		tokenIdentifier = token
 	}
 
-	responseData.DCTValues = append(responseData.DCTValues, value)
+	responseData.DCDTValues = append(responseData.DCDTValues, value)
 	responseData.Tokens = append(responseData.Tokens, tokenIdentifier)
 
 	return responseData

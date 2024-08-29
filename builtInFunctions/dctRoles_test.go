@@ -8,66 +8,66 @@ import (
 	"testing"
 
 	"github.com/DharitriOne/drt-chain-core-go/core"
-	"github.com/DharitriOne/drt-chain-core-go/data/dct"
+	"github.com/DharitriOne/drt-chain-core-go/data/dcdt"
 	vmcommon "github.com/DharitriOne/drt-chain-vm-common-go"
 	"github.com/DharitriOne/drt-chain-vm-common-go/mock"
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewDCTRolesFunc_NilMarshalizerShouldErr(t *testing.T) {
+func TestNewDCDTRolesFunc_NilMarshalizerShouldErr(t *testing.T) {
 	t.Parallel()
 
-	dctRolesF, err := NewDCTRolesFunc(nil, false)
+	dcdtRolesF, err := NewDCDTRolesFunc(nil, false)
 
 	require.Equal(t, ErrNilMarshalizer, err)
-	require.Nil(t, dctRolesF)
+	require.Nil(t, dcdtRolesF)
 }
 
-func TestDctRoles_ProcessBuiltinFunction_NilVMInputShouldErr(t *testing.T) {
+func TestDcdtRoles_ProcessBuiltinFunction_NilVMInputShouldErr(t *testing.T) {
 	t.Parallel()
 
-	dctRolesF, _ := NewDCTRolesFunc(nil, false)
+	dcdtRolesF, _ := NewDCDTRolesFunc(nil, false)
 
-	_, err := dctRolesF.ProcessBuiltinFunction(nil, &mock.UserAccountStub{}, nil)
+	_, err := dcdtRolesF.ProcessBuiltinFunction(nil, &mock.UserAccountStub{}, nil)
 	require.Equal(t, ErrNilVmInput, err)
 }
 
-func TestDctRoles_ProcessBuiltinFunction_WrongCalledShouldErr(t *testing.T) {
+func TestDcdtRoles_ProcessBuiltinFunction_WrongCalledShouldErr(t *testing.T) {
 	t.Parallel()
 
-	dctRolesF, _ := NewDCTRolesFunc(nil, false)
+	dcdtRolesF, _ := NewDCDTRolesFunc(nil, false)
 
-	_, err := dctRolesF.ProcessBuiltinFunction(nil, &mock.UserAccountStub{}, &vmcommon.ContractCallInput{
+	_, err := dcdtRolesF.ProcessBuiltinFunction(nil, &mock.UserAccountStub{}, &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallValue:  big.NewInt(0),
 			CallerAddr: []byte{},
 			Arguments:  [][]byte{[]byte("1"), []byte("2")},
 		},
 	})
-	require.Equal(t, ErrAddressIsNotDCTSystemSC, err)
+	require.Equal(t, ErrAddressIsNotDCDTSystemSC, err)
 }
 
-func TestDctRoles_ProcessBuiltinFunction_NilAccountDestShouldErr(t *testing.T) {
+func TestDcdtRoles_ProcessBuiltinFunction_NilAccountDestShouldErr(t *testing.T) {
 	t.Parallel()
 
-	dctRolesF, _ := NewDCTRolesFunc(nil, false)
+	dcdtRolesF, _ := NewDCDTRolesFunc(nil, false)
 
-	_, err := dctRolesF.ProcessBuiltinFunction(nil, nil, &vmcommon.ContractCallInput{
+	_, err := dcdtRolesF.ProcessBuiltinFunction(nil, nil, &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallValue:  big.NewInt(0),
-			CallerAddr: core.DCTSCAddress,
+			CallerAddr: core.DCDTSCAddress,
 			Arguments:  [][]byte{[]byte("1"), []byte("2")},
 		},
 	})
 	require.Equal(t, ErrNilUserAccount, err)
 }
 
-func TestDctRoles_ProcessBuiltinFunction_GetRolesFailShouldErr(t *testing.T) {
+func TestDcdtRoles_ProcessBuiltinFunction_GetRolesFailShouldErr(t *testing.T) {
 	t.Parallel()
 
-	dctRolesF, _ := NewDCTRolesFunc(&mock.MarshalizerMock{Fail: true}, false)
+	dcdtRolesF, _ := NewDCDTRolesFunc(&mock.MarshalizerMock{Fail: true}, false)
 
-	_, err := dctRolesF.ProcessBuiltinFunction(nil, &mock.UserAccountStub{
+	_, err := dcdtRolesF.ProcessBuiltinFunction(nil, &mock.UserAccountStub{
 		AccountDataHandlerCalled: func() vmcommon.AccountDataHandler {
 			return &mock.DataTrieTrackerStub{
 				RetrieveValueCalled: func(_ []byte) ([]byte, uint32, error) {
@@ -78,20 +78,20 @@ func TestDctRoles_ProcessBuiltinFunction_GetRolesFailShouldErr(t *testing.T) {
 	}, &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallValue:  big.NewInt(0),
-			CallerAddr: core.DCTSCAddress,
+			CallerAddr: core.DCDTSCAddress,
 			Arguments:  [][]byte{[]byte("1"), []byte("2")},
 		},
 	})
 	require.Error(t, err)
 }
 
-func TestDctRoles_ProcessBuiltinFunction_GetRolesFailShouldWorkEvenIfAccntTrieIsNil(t *testing.T) {
+func TestDcdtRoles_ProcessBuiltinFunction_GetRolesFailShouldWorkEvenIfAccntTrieIsNil(t *testing.T) {
 	t.Parallel()
 
 	saveKeyWasCalled := false
-	dctRolesF, _ := NewDCTRolesFunc(&mock.MarshalizerMock{}, false)
+	dcdtRolesF, _ := NewDCDTRolesFunc(&mock.MarshalizerMock{}, false)
 
-	_, err := dctRolesF.ProcessBuiltinFunction(nil, &mock.UserAccountStub{
+	_, err := dcdtRolesF.ProcessBuiltinFunction(nil, &mock.UserAccountStub{
 		AccountDataHandlerCalled: func() vmcommon.AccountDataHandler {
 			return &mock.DataTrieTrackerStub{
 				RetrieveValueCalled: func(_ []byte) ([]byte, uint32, error) {
@@ -106,7 +106,7 @@ func TestDctRoles_ProcessBuiltinFunction_GetRolesFailShouldWorkEvenIfAccntTrieIs
 	}, &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallValue:  big.NewInt(0),
-			CallerAddr: core.DCTSCAddress,
+			CallerAddr: core.DCDTSCAddress,
 			Arguments:  [][]byte{[]byte("1"), []byte("2")},
 		},
 	})
@@ -114,44 +114,44 @@ func TestDctRoles_ProcessBuiltinFunction_GetRolesFailShouldWorkEvenIfAccntTrieIs
 	require.True(t, saveKeyWasCalled)
 }
 
-func TestDctRoles_ProcessBuiltinFunction_SetRolesShouldWork(t *testing.T) {
+func TestDcdtRoles_ProcessBuiltinFunction_SetRolesShouldWork(t *testing.T) {
 	t.Parallel()
 
 	marshaller := &mock.MarshalizerMock{}
-	dctRolesF, _ := NewDCTRolesFunc(marshaller, true)
+	dcdtRolesF, _ := NewDCDTRolesFunc(marshaller, true)
 
 	acc := &mock.UserAccountStub{
 		AccountDataHandlerCalled: func() vmcommon.AccountDataHandler {
 			return &mock.DataTrieTrackerStub{
 				RetrieveValueCalled: func(_ []byte) ([]byte, uint32, error) {
-					roles := &dct.DCTRoles{}
+					roles := &dcdt.DCDTRoles{}
 					serializedRoles, err := marshaller.Marshal(roles)
 					return serializedRoles, 0, err
 				},
 				SaveKeyValueCalled: func(key []byte, value []byte) error {
-					roles := &dct.DCTRoles{}
+					roles := &dcdt.DCDTRoles{}
 					_ = marshaller.Unmarshal(roles, value)
-					require.Equal(t, roles.Roles, [][]byte{[]byte(core.DCTRoleLocalMint)})
+					require.Equal(t, roles.Roles, [][]byte{[]byte(core.DCDTRoleLocalMint)})
 					return nil
 				},
 			}
 		},
 	}
-	_, err := dctRolesF.ProcessBuiltinFunction(nil, acc, &vmcommon.ContractCallInput{
+	_, err := dcdtRolesF.ProcessBuiltinFunction(nil, acc, &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallValue:  big.NewInt(0),
-			CallerAddr: core.DCTSCAddress,
-			Arguments:  [][]byte{[]byte("1"), []byte(core.DCTRoleLocalMint)},
+			CallerAddr: core.DCDTSCAddress,
+			Arguments:  [][]byte{[]byte("1"), []byte(core.DCDTRoleLocalMint)},
 		},
 	})
 	require.Nil(t, err)
 }
 
-func TestDctRoles_ProcessBuiltinFunction_SetRolesMultiNFT(t *testing.T) {
+func TestDcdtRoles_ProcessBuiltinFunction_SetRolesMultiNFT(t *testing.T) {
 	t.Parallel()
 
 	marshaller := &mock.MarshalizerMock{}
-	dctRolesF, _ := NewDCTRolesFunc(marshaller, true)
+	dcdtRolesF, _ := NewDCDTRolesFunc(marshaller, true)
 
 	tokenID := []byte("tokenID")
 	roleKey := append(roleKeyPrefix, tokenID...)
@@ -161,15 +161,15 @@ func TestDctRoles_ProcessBuiltinFunction_SetRolesMultiNFT(t *testing.T) {
 		AccountDataHandlerCalled: func() vmcommon.AccountDataHandler {
 			return &mock.DataTrieTrackerStub{
 				RetrieveValueCalled: func(_ []byte) ([]byte, uint32, error) {
-					roles := &dct.DCTRoles{}
+					roles := &dcdt.DCDTRoles{}
 					serializedRoles, err := marshaller.Marshal(roles)
 					return serializedRoles, 0, err
 				},
 				SaveKeyValueCalled: func(key []byte, value []byte) error {
 					if bytes.Equal(key, roleKey) {
-						roles := &dct.DCTRoles{}
+						roles := &dcdt.DCDTRoles{}
 						_ = marshaller.Unmarshal(roles, value)
-						require.Equal(t, roles.Roles, [][]byte{[]byte(core.DCTRoleNFTCreate), []byte(core.DCTRoleNFTCreateMultiShard)})
+						require.Equal(t, roles.Roles, [][]byte{[]byte(core.DCDTRoleNFTCreate), []byte(core.DCDTRoleNFTCreateMultiShard)})
 						return nil
 					}
 
@@ -184,11 +184,11 @@ func TestDctRoles_ProcessBuiltinFunction_SetRolesMultiNFT(t *testing.T) {
 		},
 	}
 	dstAddr := bytes.Repeat([]byte{1}, 32)
-	_, err := dctRolesF.ProcessBuiltinFunction(nil, acc, &vmcommon.ContractCallInput{
+	_, err := dcdtRolesF.ProcessBuiltinFunction(nil, acc, &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallValue:  big.NewInt(0),
-			CallerAddr: core.DCTSCAddress,
-			Arguments:  [][]byte{tokenID, []byte(core.DCTRoleNFTCreate), []byte(core.DCTRoleNFTCreateMultiShard)},
+			CallerAddr: core.DCDTSCAddress,
+			Arguments:  [][]byte{tokenID, []byte(core.DCDTRoleNFTCreate), []byte(core.DCDTRoleNFTCreateMultiShard)},
 		},
 		RecipientAddr: dstAddr,
 	})
@@ -197,18 +197,18 @@ func TestDctRoles_ProcessBuiltinFunction_SetRolesMultiNFT(t *testing.T) {
 	require.True(t, saveNonceCalled)
 }
 
-func TestDctRoles_ProcessBuiltinFunction_SaveFailedShouldErr(t *testing.T) {
+func TestDcdtRoles_ProcessBuiltinFunction_SaveFailedShouldErr(t *testing.T) {
 	t.Parallel()
 
 	marshaller := &mock.MarshalizerMock{}
-	dctRolesF, _ := NewDCTRolesFunc(marshaller, true)
+	dcdtRolesF, _ := NewDCDTRolesFunc(marshaller, true)
 
 	localErr := errors.New("local err")
 	acc := &mock.UserAccountStub{
 		AccountDataHandlerCalled: func() vmcommon.AccountDataHandler {
 			return &mock.DataTrieTrackerStub{
 				RetrieveValueCalled: func(_ []byte) ([]byte, uint32, error) {
-					roles := &dct.DCTRoles{}
+					roles := &dcdt.DCDTRoles{}
 					serializedRoles, err := marshaller.Marshal(roles)
 					return serializedRoles, 0, err
 				},
@@ -218,32 +218,32 @@ func TestDctRoles_ProcessBuiltinFunction_SaveFailedShouldErr(t *testing.T) {
 			}
 		},
 	}
-	_, err := dctRolesF.ProcessBuiltinFunction(nil, acc, &vmcommon.ContractCallInput{
+	_, err := dcdtRolesF.ProcessBuiltinFunction(nil, acc, &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallValue:  big.NewInt(0),
-			CallerAddr: core.DCTSCAddress,
-			Arguments:  [][]byte{[]byte("1"), []byte(core.DCTRoleLocalMint)},
+			CallerAddr: core.DCDTSCAddress,
+			Arguments:  [][]byte{[]byte("1"), []byte(core.DCDTRoleLocalMint)},
 		},
 	})
 	require.Equal(t, localErr, err)
 }
 
-func TestDctRoles_ProcessBuiltinFunction_UnsetRolesDoesNotExistsShouldWork(t *testing.T) {
+func TestDcdtRoles_ProcessBuiltinFunction_UnsetRolesDoesNotExistsShouldWork(t *testing.T) {
 	t.Parallel()
 
 	marshaller := &mock.MarshalizerMock{}
-	dctRolesF, _ := NewDCTRolesFunc(marshaller, false)
+	dcdtRolesF, _ := NewDCDTRolesFunc(marshaller, false)
 
 	acc := &mock.UserAccountStub{
 		AccountDataHandlerCalled: func() vmcommon.AccountDataHandler {
 			return &mock.DataTrieTrackerStub{
 				RetrieveValueCalled: func(_ []byte) ([]byte, uint32, error) {
-					roles := &dct.DCTRoles{}
+					roles := &dcdt.DCDTRoles{}
 					serializedRoles, err := marshaller.Marshal(roles)
 					return serializedRoles, 0, err
 				},
 				SaveKeyValueCalled: func(key []byte, value []byte) error {
-					roles := &dct.DCTRoles{}
+					roles := &dcdt.DCDTRoles{}
 					_ = marshaller.Unmarshal(roles, value)
 					require.Len(t, roles.Roles, 0)
 					return nil
@@ -251,34 +251,34 @@ func TestDctRoles_ProcessBuiltinFunction_UnsetRolesDoesNotExistsShouldWork(t *te
 			}
 		},
 	}
-	_, err := dctRolesF.ProcessBuiltinFunction(nil, acc, &vmcommon.ContractCallInput{
+	_, err := dcdtRolesF.ProcessBuiltinFunction(nil, acc, &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallValue:  big.NewInt(0),
-			CallerAddr: core.DCTSCAddress,
-			Arguments:  [][]byte{[]byte("1"), []byte(core.DCTRoleLocalMint)},
+			CallerAddr: core.DCDTSCAddress,
+			Arguments:  [][]byte{[]byte("1"), []byte(core.DCDTRoleLocalMint)},
 		},
 	})
 	require.Nil(t, err)
 }
 
-func TestDctRoles_ProcessBuiltinFunction_UnsetRolesShouldWork(t *testing.T) {
+func TestDcdtRoles_ProcessBuiltinFunction_UnsetRolesShouldWork(t *testing.T) {
 	t.Parallel()
 
 	marshaller := &mock.MarshalizerMock{}
-	dctRolesF, _ := NewDCTRolesFunc(marshaller, false)
+	dcdtRolesF, _ := NewDCDTRolesFunc(marshaller, false)
 
 	acc := &mock.UserAccountStub{
 		AccountDataHandlerCalled: func() vmcommon.AccountDataHandler {
 			return &mock.DataTrieTrackerStub{
 				RetrieveValueCalled: func(_ []byte) ([]byte, uint32, error) {
-					roles := &dct.DCTRoles{
-						Roles: [][]byte{[]byte(core.DCTRoleLocalMint)},
+					roles := &dcdt.DCDTRoles{
+						Roles: [][]byte{[]byte(core.DCDTRoleLocalMint)},
 					}
 					serializedRoles, err := marshaller.Marshal(roles)
 					return serializedRoles, 0, err
 				},
 				SaveKeyValueCalled: func(key []byte, value []byte) error {
-					roles := &dct.DCTRoles{}
+					roles := &dcdt.DCDTRoles{}
 					_ = marshaller.Unmarshal(roles, value)
 					require.Len(t, roles.Roles, 0)
 					return nil
@@ -286,33 +286,33 @@ func TestDctRoles_ProcessBuiltinFunction_UnsetRolesShouldWork(t *testing.T) {
 			}
 		},
 	}
-	_, err := dctRolesF.ProcessBuiltinFunction(nil, acc, &vmcommon.ContractCallInput{
+	_, err := dcdtRolesF.ProcessBuiltinFunction(nil, acc, &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallValue:  big.NewInt(0),
-			CallerAddr: core.DCTSCAddress,
-			Arguments:  [][]byte{[]byte("1"), []byte(core.DCTRoleLocalMint)},
+			CallerAddr: core.DCDTSCAddress,
+			Arguments:  [][]byte{[]byte("1"), []byte(core.DCDTRoleLocalMint)},
 		},
 	})
 	require.Nil(t, err)
 }
 
-func TestDctRoles_CheckAllowedToExecuteNilAccountShouldErr(t *testing.T) {
+func TestDcdtRoles_CheckAllowedToExecuteNilAccountShouldErr(t *testing.T) {
 	t.Parallel()
 
 	marshaller := &mock.MarshalizerMock{}
-	dctRolesF, _ := NewDCTRolesFunc(marshaller, false)
+	dcdtRolesF, _ := NewDCDTRolesFunc(marshaller, false)
 
-	err := dctRolesF.CheckAllowedToExecute(nil, []byte("ID"), []byte(core.DCTRoleLocalBurn))
+	err := dcdtRolesF.CheckAllowedToExecute(nil, []byte("ID"), []byte(core.DCDTRoleLocalBurn))
 	require.Equal(t, ErrNilUserAccount, err)
 }
 
-func TestDctRoles_CheckAllowedToExecuteCannotGetDCTRole(t *testing.T) {
+func TestDcdtRoles_CheckAllowedToExecuteCannotGetDCDTRole(t *testing.T) {
 	t.Parallel()
 
 	marshaller := &mock.MarshalizerMock{Fail: true}
-	dctRolesF, _ := NewDCTRolesFunc(marshaller, false)
+	dcdtRolesF, _ := NewDCDTRolesFunc(marshaller, false)
 
-	err := dctRolesF.CheckAllowedToExecute(&mock.UserAccountStub{
+	err := dcdtRolesF.CheckAllowedToExecute(&mock.UserAccountStub{
 		AccountDataHandlerCalled: func() vmcommon.AccountDataHandler {
 			return &mock.DataTrieTrackerStub{
 				RetrieveValueCalled: func(_ []byte) ([]byte, uint32, error) {
@@ -320,17 +320,17 @@ func TestDctRoles_CheckAllowedToExecuteCannotGetDCTRole(t *testing.T) {
 				},
 			}
 		},
-	}, []byte("ID"), []byte(core.DCTRoleLocalBurn))
+	}, []byte("ID"), []byte(core.DCDTRoleLocalBurn))
 	require.Error(t, err)
 }
 
-func TestDctRoles_CheckAllowedToExecuteIsNewNotAllowed(t *testing.T) {
+func TestDcdtRoles_CheckAllowedToExecuteIsNewNotAllowed(t *testing.T) {
 	t.Parallel()
 
 	marshaller := &mock.MarshalizerMock{}
-	dctRolesF, _ := NewDCTRolesFunc(marshaller, false)
+	dcdtRolesF, _ := NewDCDTRolesFunc(marshaller, false)
 
-	err := dctRolesF.CheckAllowedToExecute(&mock.UserAccountStub{
+	err := dcdtRolesF.CheckAllowedToExecute(&mock.UserAccountStub{
 		AccountDataHandlerCalled: func() vmcommon.AccountDataHandler {
 			return &mock.DataTrieTrackerStub{
 				RetrieveValueCalled: func(_ []byte) ([]byte, uint32, error) {
@@ -338,50 +338,50 @@ func TestDctRoles_CheckAllowedToExecuteIsNewNotAllowed(t *testing.T) {
 				},
 			}
 		},
-	}, []byte("ID"), []byte(core.DCTRoleLocalBurn))
+	}, []byte("ID"), []byte(core.DCDTRoleLocalBurn))
 	require.Equal(t, ErrActionNotAllowed, err)
 }
 
-func TestDctRoles_CheckAllowed_ShouldWork(t *testing.T) {
+func TestDcdtRoles_CheckAllowed_ShouldWork(t *testing.T) {
 	t.Parallel()
 
 	marshaller := &mock.MarshalizerMock{}
-	dctRolesF, _ := NewDCTRolesFunc(marshaller, false)
+	dcdtRolesF, _ := NewDCDTRolesFunc(marshaller, false)
 
-	err := dctRolesF.CheckAllowedToExecute(&mock.UserAccountStub{
+	err := dcdtRolesF.CheckAllowedToExecute(&mock.UserAccountStub{
 		AccountDataHandlerCalled: func() vmcommon.AccountDataHandler {
 			return &mock.DataTrieTrackerStub{
 				RetrieveValueCalled: func(_ []byte) ([]byte, uint32, error) {
-					roles := &dct.DCTRoles{
-						Roles: [][]byte{[]byte(core.DCTRoleLocalMint)},
+					roles := &dcdt.DCDTRoles{
+						Roles: [][]byte{[]byte(core.DCDTRoleLocalMint)},
 					}
 					serializedRoles, err := marshaller.Marshal(roles)
 					return serializedRoles, 0, err
 				},
 			}
 		},
-	}, []byte("ID"), []byte(core.DCTRoleLocalMint))
+	}, []byte("ID"), []byte(core.DCDTRoleLocalMint))
 	require.Nil(t, err)
 }
 
-func TestDctRoles_CheckAllowedToExecuteRoleNotFind(t *testing.T) {
+func TestDcdtRoles_CheckAllowedToExecuteRoleNotFind(t *testing.T) {
 	t.Parallel()
 
 	marshaller := &mock.MarshalizerMock{}
-	dctRolesF, _ := NewDCTRolesFunc(marshaller, false)
+	dcdtRolesF, _ := NewDCDTRolesFunc(marshaller, false)
 
-	err := dctRolesF.CheckAllowedToExecute(&mock.UserAccountStub{
+	err := dcdtRolesF.CheckAllowedToExecute(&mock.UserAccountStub{
 		AccountDataHandlerCalled: func() vmcommon.AccountDataHandler {
 			return &mock.DataTrieTrackerStub{
 				RetrieveValueCalled: func(_ []byte) ([]byte, uint32, error) {
-					roles := &dct.DCTRoles{
-						Roles: [][]byte{[]byte(core.DCTRoleLocalBurn)},
+					roles := &dcdt.DCDTRoles{
+						Roles: [][]byte{[]byte(core.DCDTRoleLocalBurn)},
 					}
 					serializedRoles, err := marshaller.Marshal(roles)
 					return serializedRoles, 0, err
 				},
 			}
 		},
-	}, []byte("ID"), []byte(core.DCTRoleLocalMint))
+	}, []byte("ID"), []byte(core.DCDTRoleLocalMint))
 	require.Equal(t, ErrActionNotAllowed, err)
 }

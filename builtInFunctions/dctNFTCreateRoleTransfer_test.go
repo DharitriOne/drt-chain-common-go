@@ -6,28 +6,28 @@ import (
 	"testing"
 
 	"github.com/DharitriOne/drt-chain-core-go/core"
-	"github.com/DharitriOne/drt-chain-core-go/data/dct"
+	"github.com/DharitriOne/drt-chain-core-go/data/dcdt"
 	vmcommon "github.com/DharitriOne/drt-chain-vm-common-go"
 	"github.com/DharitriOne/drt-chain-vm-common-go/mock"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDctNFTCreateRoleTransfer_Constructor(t *testing.T) {
+func TestDcdtNFTCreateRoleTransfer_Constructor(t *testing.T) {
 	t.Parallel()
 
-	e, err := NewDCTNFTCreateRoleTransfer(nil, &mock.AccountsStub{}, mock.NewMultiShardsCoordinatorMock(2))
+	e, err := NewDCDTNFTCreateRoleTransfer(nil, &mock.AccountsStub{}, mock.NewMultiShardsCoordinatorMock(2))
 	assert.Nil(t, e)
 	assert.Equal(t, err, ErrNilMarshalizer)
 
-	e, err = NewDCTNFTCreateRoleTransfer(&mock.MarshalizerMock{}, nil, mock.NewMultiShardsCoordinatorMock(2))
+	e, err = NewDCDTNFTCreateRoleTransfer(&mock.MarshalizerMock{}, nil, mock.NewMultiShardsCoordinatorMock(2))
 	assert.Nil(t, e)
 	assert.Equal(t, err, ErrNilAccountsAdapter)
 
-	e, err = NewDCTNFTCreateRoleTransfer(&mock.MarshalizerMock{}, &mock.AccountsStub{}, nil)
+	e, err = NewDCDTNFTCreateRoleTransfer(&mock.MarshalizerMock{}, &mock.AccountsStub{}, nil)
 	assert.Nil(t, e)
 	assert.Equal(t, err, ErrNilShardCoordinator)
 
-	e, err = NewDCTNFTCreateRoleTransfer(&mock.MarshalizerMock{}, &mock.AccountsStub{}, mock.NewMultiShardsCoordinatorMock(2))
+	e, err = NewDCDTNFTCreateRoleTransfer(&mock.MarshalizerMock{}, &mock.AccountsStub{}, mock.NewMultiShardsCoordinatorMock(2))
 	assert.Nil(t, err)
 	assert.NotNil(t, e)
 	assert.False(t, e.IsInterfaceNil())
@@ -35,10 +35,10 @@ func TestDctNFTCreateRoleTransfer_Constructor(t *testing.T) {
 	e.SetNewGasConfig(&vmcommon.GasCost{})
 }
 
-func TestDCTNFTCreateRoleTransfer_ProcessWithErrors(t *testing.T) {
+func TestDCDTNFTCreateRoleTransfer_ProcessWithErrors(t *testing.T) {
 	t.Parallel()
 
-	e, err := NewDCTNFTCreateRoleTransfer(&mock.MarshalizerMock{}, &mock.AccountsStub{}, mock.NewMultiShardsCoordinatorMock(2))
+	e, err := NewDCDTNFTCreateRoleTransfer(&mock.MarshalizerMock{}, &mock.AccountsStub{}, mock.NewMultiShardsCoordinatorMock(2))
 	assert.Nil(t, err)
 	assert.NotNil(t, e)
 
@@ -68,7 +68,7 @@ func TestDCTNFTCreateRoleTransfer_ProcessWithErrors(t *testing.T) {
 	assert.Equal(t, err, ErrNilUserAccount)
 	assert.Nil(t, vmOutput)
 
-	vmInput.CallerAddr = core.DCTSCAddress
+	vmInput.CallerAddr = core.DCDTSCAddress
 	vmInput.Arguments = [][]byte{{1}, {2}, {3}}
 	vmOutput, err = e.ProcessBuiltinFunction(nil, &mock.UserAccountStub{}, vmInput)
 	assert.Equal(t, err, ErrInvalidArguments)
@@ -80,7 +80,7 @@ func TestDCTNFTCreateRoleTransfer_ProcessWithErrors(t *testing.T) {
 	assert.Nil(t, vmOutput)
 }
 
-func createDCTNFTCreateRoleTransferComponent(t *testing.T) *dctNFTCreateRoleTransfer {
+func createDCDTNFTCreateRoleTransferComponent(t *testing.T) *dcdtNFTCreateRoleTransfer {
 	marshaller := &mock.MarshalizerMock{}
 	shardCoordinator := mock.NewMultiShardsCoordinatorMock(2)
 	mapAccounts := make(map[string]vmcommon.UserAccountHandler)
@@ -101,30 +101,30 @@ func createDCTNFTCreateRoleTransferComponent(t *testing.T) *dctNFTCreateRoleTran
 		},
 	}
 
-	e, err := NewDCTNFTCreateRoleTransfer(marshaller, accounts, shardCoordinator)
+	e, err := NewDCDTNFTCreateRoleTransfer(marshaller, accounts, shardCoordinator)
 	assert.Nil(t, err)
 	assert.NotNil(t, e)
 	return e
 }
 
-func TestDCTNFTCreateRoleTransfer_ProcessAtCurrentShard(t *testing.T) {
+func TestDCDTNFTCreateRoleTransfer_ProcessAtCurrentShard(t *testing.T) {
 	t.Parallel()
 
-	e := createDCTNFTCreateRoleTransferComponent(t)
+	e := createDCDTNFTCreateRoleTransferComponent(t)
 
 	tokenID := []byte("NFT")
 	currentOwner := bytes.Repeat([]byte{1}, 32)
 	destinationAddr := bytes.Repeat([]byte{2}, 32)
 	vmInput := &vmcommon.ContractCallInput{}
 	vmInput.CallValue = big.NewInt(0)
-	vmInput.CallerAddr = core.DCTSCAddress
+	vmInput.CallerAddr = core.DCDTSCAddress
 	vmInput.Arguments = [][]byte{tokenID, destinationAddr}
 
 	destAcc, _ := e.accounts.LoadAccount(currentOwner)
 	userAcc := destAcc.(vmcommon.UserAccountHandler)
 
-	dctTokenRoleKey := append(roleKeyPrefix, tokenID...)
-	err := saveRolesToAccount(userAcc, dctTokenRoleKey, &dct.DCTRoles{Roles: [][]byte{[]byte(core.DCTRoleNFTCreate), []byte(core.DCTRoleNFTAddQuantity)}}, e.marshaller)
+	dcdtTokenRoleKey := append(roleKeyPrefix, tokenID...)
+	err := saveRolesToAccount(userAcc, dcdtTokenRoleKey, &dcdt.DCDTRoles{Roles: [][]byte{[]byte(core.DCDTRoleNFTCreate), []byte(core.DCDTRoleNFTAddQuantity)}}, e.marshaller)
 	assert.Nil(t, err)
 	_ = saveLatestNonce(userAcc, tokenID, 100)
 	_ = e.accounts.SaveAccount(userAcc)
@@ -145,10 +145,10 @@ func TestDCTNFTCreateRoleTransfer_ProcessAtCurrentShard(t *testing.T) {
 	checkNFTCreateRoleExists(t, e, destinationAddr, tokenID, 0)
 }
 
-func TestDCTNFTCreateRoleTransfer_ProcessCrossShard(t *testing.T) {
+func TestDCDTNFTCreateRoleTransfer_ProcessCrossShard(t *testing.T) {
 	t.Parallel()
 
-	e := createDCTNFTCreateRoleTransferComponent(t)
+	e := createDCDTNFTCreateRoleTransferComponent(t)
 
 	tokenID := []byte("NFT")
 	currentOwner := bytes.Repeat([]byte{1}, 32)
@@ -187,19 +187,19 @@ func TestDCTNFTCreateRoleTransfer_ProcessCrossShard(t *testing.T) {
 	assert.Nil(t, vmOutput)
 }
 
-func checkLatestNonce(t *testing.T, e *dctNFTCreateRoleTransfer, addr []byte, tokenID []byte, expectedNonce uint64) {
+func checkLatestNonce(t *testing.T, e *dcdtNFTCreateRoleTransfer, addr []byte, tokenID []byte, expectedNonce uint64) {
 	destAcc, _ := e.accounts.LoadAccount(addr)
 	userAcc := destAcc.(vmcommon.UserAccountHandler)
 	nonce, _ := getLatestNonce(userAcc, tokenID)
 	assert.Equal(t, expectedNonce, nonce)
 }
 
-func checkNFTCreateRoleExists(t *testing.T, e *dctNFTCreateRoleTransfer, addr []byte, tokenID []byte, expectedIndex int) {
+func checkNFTCreateRoleExists(t *testing.T, e *dcdtNFTCreateRoleTransfer, addr []byte, tokenID []byte, expectedIndex int) {
 	destAcc, _ := e.accounts.LoadAccount(addr)
 	userAcc := destAcc.(vmcommon.UserAccountHandler)
-	dctTokenRoleKey := append(roleKeyPrefix, tokenID...)
-	roles, _, _ := getDCTRolesForAcnt(e.marshaller, userAcc, dctTokenRoleKey)
+	dcdtTokenRoleKey := append(roleKeyPrefix, tokenID...)
+	roles, _, _ := getDCDTRolesForAcnt(e.marshaller, userAcc, dcdtTokenRoleKey)
 	assert.Equal(t, 1, len(roles.Roles))
-	index, _ := doesRoleExist(roles, []byte(core.DCTRoleNFTCreate))
+	index, _ := doesRoleExist(roles, []byte(core.DCDTRoleNFTCreate))
 	assert.Equal(t, expectedIndex, index)
 }

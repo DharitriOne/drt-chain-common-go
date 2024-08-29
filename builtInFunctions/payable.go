@@ -40,10 +40,10 @@ func (p *payableCheck) mustVerifyPayable(vmInput *vmcommon.ContractCallInput, mi
 			return false
 		}
 	}
-	if vmInput.CallType == typeToVerify || vmInput.CallType == vm.DCTTransferAndExecute {
+	if vmInput.CallType == typeToVerify || vmInput.CallType == vm.DCDTTransferAndExecute {
 		return false
 	}
-	if bytes.Equal(vmInput.CallerAddr, core.DCTSCAddress) {
+	if bytes.Equal(vmInput.CallerAddr, core.DCDTSCAddress) {
 		return false
 	}
 	if len(vmInput.Arguments) > minLenArguments {

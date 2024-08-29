@@ -7,28 +7,28 @@ import (
 
 	"github.com/DharitriOne/drt-chain-core-go/core"
 	"github.com/DharitriOne/drt-chain-core-go/core/check"
-	"github.com/DharitriOne/drt-chain-core-go/data/dct"
+	"github.com/DharitriOne/drt-chain-core-go/data/dcdt"
 	vmcommon "github.com/DharitriOne/drt-chain-vm-common-go"
 )
 
-var roleKeyPrefix = []byte(core.ProtectedKeyPrefix + core.DCTRoleIdentifier + core.DCTKeyIdentifier)
+var roleKeyPrefix = []byte(core.ProtectedKeyPrefix + core.DCDTRoleIdentifier + core.DCDTKeyIdentifier)
 
-type dctRoles struct {
+type dcdtRoles struct {
 	baseAlwaysActiveHandler
 	set        bool
 	marshaller vmcommon.Marshalizer
 }
 
-// NewDCTRolesFunc returns the dct change roles built-in function component
-func NewDCTRolesFunc(
+// NewDCDTRolesFunc returns the dcdt change roles built-in function component
+func NewDCDTRolesFunc(
 	marshaller vmcommon.Marshalizer,
 	set bool,
-) (*dctRoles, error) {
+) (*dcdtRoles, error) {
 	if check.IfNil(marshaller) {
 		return nil, ErrNilMarshalizer
 	}
 
-	e := &dctRoles{
+	e := &dcdtRoles{
 		set:        set,
 		marshaller: marshaller,
 	}
@@ -37,28 +37,28 @@ func NewDCTRolesFunc(
 }
 
 // SetNewGasConfig is called whenever gas cost is changed
-func (e *dctRoles) SetNewGasConfig(_ *vmcommon.GasCost) {
+func (e *dcdtRoles) SetNewGasConfig(_ *vmcommon.GasCost) {
 }
 
-// ProcessBuiltinFunction resolves DCT change roles function call
-func (e *dctRoles) ProcessBuiltinFunction(
+// ProcessBuiltinFunction resolves DCDT change roles function call
+func (e *dcdtRoles) ProcessBuiltinFunction(
 	_, acntDst vmcommon.UserAccountHandler,
 	vmInput *vmcommon.ContractCallInput,
 ) (*vmcommon.VMOutput, error) {
-	err := checkBasicDCTArguments(vmInput)
+	err := checkBasicDCDTArguments(vmInput)
 	if err != nil {
 		return nil, err
 	}
-	if !bytes.Equal(vmInput.CallerAddr, core.DCTSCAddress) {
-		return nil, ErrAddressIsNotDCTSystemSC
+	if !bytes.Equal(vmInput.CallerAddr, core.DCDTSCAddress) {
+		return nil, ErrAddressIsNotDCDTSystemSC
 	}
 	if check.IfNil(acntDst) {
 		return nil, ErrNilUserAccount
 	}
 
-	dctTokenRoleKey := append(roleKeyPrefix, vmInput.Arguments[0]...)
+	dcdtTokenRoleKey := append(roleKeyPrefix, vmInput.Arguments[0]...)
 
-	roles, _, err := getDCTRolesForAcnt(e.marshaller, acntDst, dctTokenRoleKey)
+	roles, _, err := getDCDTRolesForAcnt(e.marshaller, acntDst, dcdtTokenRoleKey)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (e *dctRoles) ProcessBuiltinFunction(
 	}
 
 	for _, arg := range vmInput.Arguments[1:] {
-		if !bytes.Equal(arg, []byte(core.DCTRoleNFTCreateMultiShard)) {
+		if !bytes.Equal(arg, []byte(core.DCDTRoleNFTCreateMultiShard)) {
 			continue
 		}
 
@@ -82,7 +82,7 @@ func (e *dctRoles) ProcessBuiltinFunction(
 		break
 	}
 
-	err = saveRolesToAccount(acntDst, dctTokenRoleKey, roles, e.marshaller)
+	err = saveRolesToAccount(acntDst, dcdtTokenRoleKey, roles, e.marshaller)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (e *dctRoles) ProcessBuiltinFunction(
 	vmOutput := &vmcommon.VMOutput{ReturnCode: vmcommon.Ok}
 
 	logData := append([][]byte{acntDst.AddressBytes()}, vmInput.Arguments[1:]...)
-	addDCTEntryInVMOutput(vmOutput, []byte(vmInput.Function), vmInput.Arguments[0], 0, big.NewInt(0), logData...)
+	addDCDTEntryInVMOutput(vmOutput, []byte(vmInput.Function), vmInput.Arguments[0], 0, big.NewInt(0), logData...)
 
 	return vmOutput, nil
 }
@@ -104,7 +104,7 @@ func computeStartNonce(destAddress []byte) uint64 {
 	return startNonce
 }
 
-func deleteRoles(roles *dct.DCTRoles, deleteRoles [][]byte) {
+func deleteRoles(roles *dcdt.DCDTRoles, deleteRoles [][]byte) {
 	for _, deleteRole := range deleteRoles {
 		index, exist := doesRoleExist(roles, deleteRole)
 		if !exist {
@@ -117,7 +117,7 @@ func deleteRoles(roles *dct.DCTRoles, deleteRoles [][]byte) {
 	}
 }
 
-func doesRoleExist(roles *dct.DCTRoles, role []byte) (int, bool) {
+func doesRoleExist(roles *dcdt.DCDTRoles, role []byte) (int, bool) {
 	for i, currentRole := range roles.Roles {
 		if bytes.Equal(currentRole, role) {
 			return i, true
@@ -126,12 +126,12 @@ func doesRoleExist(roles *dct.DCTRoles, role []byte) (int, bool) {
 	return -1, false
 }
 
-func getDCTRolesForAcnt(
+func getDCDTRolesForAcnt(
 	marshaller vmcommon.Marshalizer,
 	acnt vmcommon.UserAccountHandler,
 	key []byte,
-) (*dct.DCTRoles, bool, error) {
-	roles := &dct.DCTRoles{
+) (*dcdt.DCDTRoles, bool, error) {
+	roles := &dcdt.DCDTRoles{
 		Roles: make([][]byte, 0),
 	}
 
@@ -152,13 +152,13 @@ func getDCTRolesForAcnt(
 }
 
 // CheckAllowedToExecute returns error if the account is not allowed to execute the given action
-func (e *dctRoles) CheckAllowedToExecute(account vmcommon.UserAccountHandler, tokenID []byte, action []byte) error {
+func (e *dcdtRoles) CheckAllowedToExecute(account vmcommon.UserAccountHandler, tokenID []byte, action []byte) error {
 	if check.IfNil(account) {
 		return ErrNilUserAccount
 	}
 
-	dctTokenRoleKey := append(roleKeyPrefix, tokenID...)
-	roles, isNew, err := getDCTRolesForAcnt(e.marshaller, account, dctTokenRoleKey)
+	dcdtTokenRoleKey := append(roleKeyPrefix, tokenID...)
+	roles, isNew, err := getDCDTRolesForAcnt(e.marshaller, account, dcdtTokenRoleKey)
 	if err != nil {
 		return err
 	}
@@ -174,6 +174,6 @@ func (e *dctRoles) CheckAllowedToExecute(account vmcommon.UserAccountHandler, to
 }
 
 // IsInterfaceNil returns true if underlying object in nil
-func (e *dctRoles) IsInterfaceNil() bool {
+func (e *dcdtRoles) IsInterfaceNil() bool {
 	return e == nil
 }

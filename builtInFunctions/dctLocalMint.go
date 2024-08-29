@@ -10,25 +10,25 @@ import (
 	vmcommon "github.com/DharitriOne/drt-chain-vm-common-go"
 )
 
-type dctLocalMint struct {
+type dcdtLocalMint struct {
 	baseAlwaysActiveHandler
 	keyPrefix             []byte
 	marshaller            vmcommon.Marshalizer
-	globalSettingsHandler vmcommon.DCTGlobalSettingsHandler
-	rolesHandler          vmcommon.DCTRoleHandler
+	globalSettingsHandler vmcommon.DCDTGlobalSettingsHandler
+	rolesHandler          vmcommon.DCDTRoleHandler
 	enableEpochsHandler   vmcommon.EnableEpochsHandler
 	funcGasCost           uint64
 	mutExecution          sync.RWMutex
 }
 
-// NewDCTLocalMintFunc returns the dct local mint built-in function component
-func NewDCTLocalMintFunc(
+// NewDCDTLocalMintFunc returns the dcdt local mint built-in function component
+func NewDCDTLocalMintFunc(
 	funcGasCost uint64,
 	marshaller vmcommon.Marshalizer,
-	globalSettingsHandler vmcommon.DCTGlobalSettingsHandler,
-	rolesHandler vmcommon.DCTRoleHandler,
+	globalSettingsHandler vmcommon.DCDTGlobalSettingsHandler,
+	rolesHandler vmcommon.DCDTRoleHandler,
 	enableEpochsHandler vmcommon.EnableEpochsHandler,
-) (*dctLocalMint, error) {
+) (*dcdtLocalMint, error) {
 	if check.IfNil(marshaller) {
 		return nil, ErrNilMarshalizer
 	}
@@ -42,8 +42,8 @@ func NewDCTLocalMintFunc(
 		return nil, ErrNilEnableEpochsHandler
 	}
 
-	e := &dctLocalMint{
-		keyPrefix:             []byte(baseDCTKeyPrefix),
+	e := &dcdtLocalMint{
+		keyPrefix:             []byte(baseDCDTKeyPrefix),
 		marshaller:            marshaller,
 		globalSettingsHandler: globalSettingsHandler,
 		rolesHandler:          rolesHandler,
@@ -56,18 +56,18 @@ func NewDCTLocalMintFunc(
 }
 
 // SetNewGasConfig is called whenever gas cost is changed
-func (e *dctLocalMint) SetNewGasConfig(gasCost *vmcommon.GasCost) {
+func (e *dcdtLocalMint) SetNewGasConfig(gasCost *vmcommon.GasCost) {
 	if gasCost == nil {
 		return
 	}
 
 	e.mutExecution.Lock()
-	e.funcGasCost = gasCost.BuiltInCost.DCTLocalMint
+	e.funcGasCost = gasCost.BuiltInCost.DCDTLocalMint
 	e.mutExecution.Unlock()
 }
 
-// ProcessBuiltinFunction resolves DCT local mint function call
-func (e *dctLocalMint) ProcessBuiltinFunction(
+// ProcessBuiltinFunction resolves DCDT local mint function call
+func (e *dcdtLocalMint) ProcessBuiltinFunction(
 	acntSnd, _ vmcommon.UserAccountHandler,
 	vmInput *vmcommon.ContractCallInput,
 ) (*vmcommon.VMOutput, error) {
@@ -80,34 +80,34 @@ func (e *dctLocalMint) ProcessBuiltinFunction(
 	}
 
 	tokenID := vmInput.Arguments[0]
-	err = e.rolesHandler.CheckAllowedToExecute(acntSnd, tokenID, []byte(core.DCTRoleLocalMint))
+	err = e.rolesHandler.CheckAllowedToExecute(acntSnd, tokenID, []byte(core.DCDTRoleLocalMint))
 	if err != nil {
 		return nil, err
 	}
 
-	if len(vmInput.Arguments[1]) > core.MaxLenForDCTIssueMint {
+	if len(vmInput.Arguments[1]) > core.MaxLenForDCDTIssueMint {
 		if e.enableEpochsHandler.IsFlagEnabled(ConsistentTokensValuesLengthCheckFlag) {
-			return nil, fmt.Errorf("%w: max length for dct local mint value is %d", ErrInvalidArguments, core.MaxLenForDCTIssueMint)
+			return nil, fmt.Errorf("%w: max length for dcdt local mint value is %d", ErrInvalidArguments, core.MaxLenForDCDTIssueMint)
 		}
 		// backward compatibility - return old error
-		return nil, fmt.Errorf("%w max length for dct issue is %d", ErrInvalidArguments, core.MaxLenForDCTIssueMint)
+		return nil, fmt.Errorf("%w max length for dcdt issue is %d", ErrInvalidArguments, core.MaxLenForDCDTIssueMint)
 	}
 
 	value := big.NewInt(0).SetBytes(vmInput.Arguments[1])
-	dctTokenKey := append(e.keyPrefix, tokenID...)
-	err = addToDCTBalance(acntSnd, dctTokenKey, big.NewInt(0).Set(value), e.marshaller, e.globalSettingsHandler, vmInput.ReturnCallAfterError)
+	dcdtTokenKey := append(e.keyPrefix, tokenID...)
+	err = addToDCDTBalance(acntSnd, dcdtTokenKey, big.NewInt(0).Set(value), e.marshaller, e.globalSettingsHandler, vmInput.ReturnCallAfterError)
 	if err != nil {
 		return nil, err
 	}
 
 	vmOutput := &vmcommon.VMOutput{ReturnCode: vmcommon.Ok, GasRemaining: vmInput.GasProvided - e.funcGasCost}
 
-	addDCTEntryInVMOutput(vmOutput, []byte(core.BuiltInFunctionDCTLocalMint), vmInput.Arguments[0], 0, value, vmInput.CallerAddr)
+	addDCDTEntryInVMOutput(vmOutput, []byte(core.BuiltInFunctionDCDTLocalMint), vmInput.Arguments[0], 0, value, vmInput.CallerAddr)
 
 	return vmOutput, nil
 }
 
 // IsInterfaceNil returns true if underlying object in nil
-func (e *dctLocalMint) IsInterfaceNil() bool {
+func (e *dcdtLocalMint) IsInterfaceNil() bool {
 	return e == nil
 }

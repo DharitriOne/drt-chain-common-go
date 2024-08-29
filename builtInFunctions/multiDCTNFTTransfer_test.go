@@ -11,21 +11,21 @@ import (
 
 	"github.com/DharitriOne/drt-chain-core-go/core"
 	"github.com/DharitriOne/drt-chain-core-go/core/check"
-	"github.com/DharitriOne/drt-chain-core-go/data/dct"
+	"github.com/DharitriOne/drt-chain-core-go/data/dcdt"
 	vmcommon "github.com/DharitriOne/drt-chain-vm-common-go"
 	"github.com/DharitriOne/drt-chain-vm-common-go/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func createDCTNFTMultiTransferWithStubArguments() *dctNFTMultiTransfer {
+func createDCDTNFTMultiTransferWithStubArguments() *dcdtNFTMultiTransfer {
 	enableEpochsHandler := &mock.EnableEpochsHandlerStub{
 		IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
-			return flag == DCTNFTImprovementV1Flag || flag == CheckCorrectTokenIDForTransferRoleFlag
+			return flag == DCDTNFTImprovementV1Flag || flag == CheckCorrectTokenIDForTransferRoleFlag
 		},
 	}
 
-	multiTransfer, _ := NewDCTNFTMultiTransferFunc(
+	multiTransfer, _ := NewDCDTNFTMultiTransferFunc(
 		0,
 		&mock.MarshalizerMock{},
 		&mock.GlobalSettingsHandlerStub{},
@@ -33,8 +33,8 @@ func createDCTNFTMultiTransferWithStubArguments() *dctNFTMultiTransfer {
 		&mock.ShardCoordinatorStub{},
 		vmcommon.BaseOperationCost{},
 		enableEpochsHandler,
-		&mock.DCTRoleHandlerStub{},
-		createNewDCTDataStorageHandler(),
+		&mock.DCDTRoleHandlerStub{},
+		createNewDCDTDataStorageHandler(),
 	)
 
 	return multiTransfer
@@ -65,11 +65,11 @@ func createAccountsAdapterWithMap() vmcommon.AccountsAdapter {
 	return accounts
 }
 
-func createDCTNFTMultiTransferWithMockArguments(selfShard uint32, numShards uint32, globalSettingsHandler vmcommon.ExtendedDCTGlobalSettingsHandler) *dctNFTMultiTransfer {
-	return createDCTNFTMultiTransferWithMockArgumentsWithLogEventFlag(selfShard, numShards, globalSettingsHandler, false)
+func createDCDTNFTMultiTransferWithMockArguments(selfShard uint32, numShards uint32, globalSettingsHandler vmcommon.ExtendedDCDTGlobalSettingsHandler) *dcdtNFTMultiTransfer {
+	return createDCDTNFTMultiTransferWithMockArgumentsWithLogEventFlag(selfShard, numShards, globalSettingsHandler, false)
 }
 
-func createDCTNFTMultiTransferWithMockArgumentsWithLogEventFlag(selfShard uint32, numShards uint32, globalSettingsHandler vmcommon.ExtendedDCTGlobalSettingsHandler, isScToScEventLogEnabled bool) *dctNFTMultiTransfer {
+func createDCDTNFTMultiTransferWithMockArgumentsWithLogEventFlag(selfShard uint32, numShards uint32, globalSettingsHandler vmcommon.ExtendedDCDTGlobalSettingsHandler, isScToScEventLogEnabled bool) *dcdtNFTMultiTransfer {
 	marshaller := &mock.MarshalizerMock{}
 	shardCoordinator := mock.NewMultiShardsCoordinatorMock(numShards)
 	shardCoordinator.CurrentShard = selfShard
@@ -81,12 +81,12 @@ func createDCTNFTMultiTransferWithMockArgumentsWithLogEventFlag(selfShard uint32
 
 	enableEpochsHandler := &mock.EnableEpochsHandlerStub{
 		IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
-			return flag == DCTNFTImprovementV1Flag ||
+			return flag == DCDTNFTImprovementV1Flag ||
 				flag == CheckCorrectTokenIDForTransferRoleFlag ||
 				(flag == ScToScLogEventFlag && isScToScEventLogEnabled)
 		},
 	}
-	multiTransfer, _ := NewDCTNFTMultiTransferFunc(
+	multiTransfer, _ := NewDCDTNFTMultiTransferFunc(
 		1,
 		marshaller,
 		globalSettingsHandler,
@@ -94,27 +94,27 @@ func createDCTNFTMultiTransferWithMockArgumentsWithLogEventFlag(selfShard uint32
 		shardCoordinator,
 		vmcommon.BaseOperationCost{},
 		enableEpochsHandler,
-		&mock.DCTRoleHandlerStub{
+		&mock.DCDTRoleHandlerStub{
 			CheckAllowedToExecuteCalled: func(account vmcommon.UserAccountHandler, tokenID []byte, action []byte) error {
-				if bytes.Equal(action, []byte(core.DCTRoleTransfer)) {
+				if bytes.Equal(action, []byte(core.DCDTRoleTransfer)) {
 					return ErrActionNotAllowed
 				}
 				return nil
 			},
 		},
-		createNewDCTDataStorageHandlerWithArgs(globalSettingsHandler, accounts, enableEpochsHandler),
+		createNewDCDTDataStorageHandlerWithArgs(globalSettingsHandler, accounts, enableEpochsHandler),
 	)
 
 	return multiTransfer
 }
 
-func TestNewDCTNFTMultiTransferFunc(t *testing.T) {
+func TestNewDCDTNFTMultiTransferFunc(t *testing.T) {
 	t.Parallel()
 
 	t.Run("nil marshaller should error", func(t *testing.T) {
 		t.Parallel()
 
-		multiTransfer, err := NewDCTNFTMultiTransferFunc(
+		multiTransfer, err := NewDCDTNFTMultiTransferFunc(
 			0,
 			nil,
 			&mock.GlobalSettingsHandlerStub{},
@@ -122,8 +122,8 @@ func TestNewDCTNFTMultiTransferFunc(t *testing.T) {
 			&mock.ShardCoordinatorStub{},
 			vmcommon.BaseOperationCost{},
 			&mock.EnableEpochsHandlerStub{},
-			&mock.DCTRoleHandlerStub{},
-			createNewDCTDataStorageHandler(),
+			&mock.DCDTRoleHandlerStub{},
+			createNewDCDTDataStorageHandler(),
 		)
 		assert.True(t, check.IfNil(multiTransfer))
 		assert.Equal(t, ErrNilMarshalizer, err)
@@ -131,7 +131,7 @@ func TestNewDCTNFTMultiTransferFunc(t *testing.T) {
 	t.Run("nil global settings should error", func(t *testing.T) {
 		t.Parallel()
 
-		multiTransfer, err := NewDCTNFTMultiTransferFunc(
+		multiTransfer, err := NewDCDTNFTMultiTransferFunc(
 			0,
 			&mock.MarshalizerMock{},
 			nil,
@@ -139,8 +139,8 @@ func TestNewDCTNFTMultiTransferFunc(t *testing.T) {
 			&mock.ShardCoordinatorStub{},
 			vmcommon.BaseOperationCost{},
 			&mock.EnableEpochsHandlerStub{},
-			&mock.DCTRoleHandlerStub{},
-			createNewDCTDataStorageHandler(),
+			&mock.DCDTRoleHandlerStub{},
+			createNewDCDTDataStorageHandler(),
 		)
 		assert.True(t, check.IfNil(multiTransfer))
 		assert.Equal(t, ErrNilGlobalSettingsHandler, err)
@@ -148,7 +148,7 @@ func TestNewDCTNFTMultiTransferFunc(t *testing.T) {
 	t.Run("nil accounts adapter should error", func(t *testing.T) {
 		t.Parallel()
 
-		multiTransfer, err := NewDCTNFTMultiTransferFunc(
+		multiTransfer, err := NewDCDTNFTMultiTransferFunc(
 			0,
 			&mock.MarshalizerMock{},
 			&mock.GlobalSettingsHandlerStub{},
@@ -156,8 +156,8 @@ func TestNewDCTNFTMultiTransferFunc(t *testing.T) {
 			&mock.ShardCoordinatorStub{},
 			vmcommon.BaseOperationCost{},
 			&mock.EnableEpochsHandlerStub{},
-			&mock.DCTRoleHandlerStub{},
-			createNewDCTDataStorageHandler(),
+			&mock.DCDTRoleHandlerStub{},
+			createNewDCDTDataStorageHandler(),
 		)
 		assert.True(t, check.IfNil(multiTransfer))
 		assert.Equal(t, ErrNilAccountsAdapter, err)
@@ -165,7 +165,7 @@ func TestNewDCTNFTMultiTransferFunc(t *testing.T) {
 	t.Run("nil shard coordinator should error", func(t *testing.T) {
 		t.Parallel()
 
-		multiTransfer, err := NewDCTNFTMultiTransferFunc(
+		multiTransfer, err := NewDCDTNFTMultiTransferFunc(
 			0,
 			&mock.MarshalizerMock{},
 			&mock.GlobalSettingsHandlerStub{},
@@ -173,8 +173,8 @@ func TestNewDCTNFTMultiTransferFunc(t *testing.T) {
 			nil,
 			vmcommon.BaseOperationCost{},
 			&mock.EnableEpochsHandlerStub{},
-			&mock.DCTRoleHandlerStub{},
-			createNewDCTDataStorageHandler(),
+			&mock.DCDTRoleHandlerStub{},
+			createNewDCDTDataStorageHandler(),
 		)
 		assert.True(t, check.IfNil(multiTransfer))
 		assert.Equal(t, ErrNilShardCoordinator, err)
@@ -182,7 +182,7 @@ func TestNewDCTNFTMultiTransferFunc(t *testing.T) {
 	t.Run("nil enable epochs handler should error", func(t *testing.T) {
 		t.Parallel()
 
-		multiTransfer, err := NewDCTNFTMultiTransferFunc(
+		multiTransfer, err := NewDCDTNFTMultiTransferFunc(
 			0,
 			&mock.MarshalizerMock{},
 			&mock.GlobalSettingsHandlerStub{},
@@ -190,8 +190,8 @@ func TestNewDCTNFTMultiTransferFunc(t *testing.T) {
 			&mock.ShardCoordinatorStub{},
 			vmcommon.BaseOperationCost{},
 			nil,
-			&mock.DCTRoleHandlerStub{},
-			createNewDCTDataStorageHandler(),
+			&mock.DCDTRoleHandlerStub{},
+			createNewDCDTDataStorageHandler(),
 		)
 		assert.True(t, check.IfNil(multiTransfer))
 		assert.Equal(t, ErrNilEnableEpochsHandler, err)
@@ -199,7 +199,7 @@ func TestNewDCTNFTMultiTransferFunc(t *testing.T) {
 	t.Run("nil roles handler should error", func(t *testing.T) {
 		t.Parallel()
 
-		multiTransfer, err := NewDCTNFTMultiTransferFunc(
+		multiTransfer, err := NewDCDTNFTMultiTransferFunc(
 			0,
 			&mock.MarshalizerMock{},
 			&mock.GlobalSettingsHandlerStub{},
@@ -208,7 +208,7 @@ func TestNewDCTNFTMultiTransferFunc(t *testing.T) {
 			vmcommon.BaseOperationCost{},
 			&mock.EnableEpochsHandlerStub{},
 			nil,
-			createNewDCTDataStorageHandler(),
+			createNewDCDTDataStorageHandler(),
 		)
 		assert.True(t, check.IfNil(multiTransfer))
 		assert.Equal(t, ErrNilRolesHandler, err)
@@ -216,7 +216,7 @@ func TestNewDCTNFTMultiTransferFunc(t *testing.T) {
 	t.Run("nil storage handler should error", func(t *testing.T) {
 		t.Parallel()
 
-		multiTransfer, err := NewDCTNFTMultiTransferFunc(
+		multiTransfer, err := NewDCDTNFTMultiTransferFunc(
 			0,
 			&mock.MarshalizerMock{},
 			&mock.GlobalSettingsHandlerStub{},
@@ -224,16 +224,16 @@ func TestNewDCTNFTMultiTransferFunc(t *testing.T) {
 			&mock.ShardCoordinatorStub{},
 			vmcommon.BaseOperationCost{},
 			&mock.EnableEpochsHandlerStub{},
-			&mock.DCTRoleHandlerStub{},
+			&mock.DCDTRoleHandlerStub{},
 			nil,
 		)
 		assert.True(t, check.IfNil(multiTransfer))
-		assert.Equal(t, ErrNilDCTNFTStorageHandler, err)
+		assert.Equal(t, ErrNilDCDTNFTStorageHandler, err)
 	})
 	t.Run("should work", func(t *testing.T) {
 		t.Parallel()
 
-		multiTransfer, err := NewDCTNFTMultiTransferFunc(
+		multiTransfer, err := NewDCDTNFTMultiTransferFunc(
 			0,
 			&mock.MarshalizerMock{},
 			&mock.GlobalSettingsHandlerStub{},
@@ -241,18 +241,18 @@ func TestNewDCTNFTMultiTransferFunc(t *testing.T) {
 			&mock.ShardCoordinatorStub{},
 			vmcommon.BaseOperationCost{},
 			&mock.EnableEpochsHandlerStub{},
-			&mock.DCTRoleHandlerStub{},
-			createNewDCTDataStorageHandler(),
+			&mock.DCDTRoleHandlerStub{},
+			createNewDCDTDataStorageHandler(),
 		)
 		assert.False(t, check.IfNil(multiTransfer))
 		assert.Nil(t, err)
 	})
 }
 
-func TestDCTNFTMultiTransfer_SetPayable(t *testing.T) {
+func TestDCDTNFTMultiTransfer_SetPayable(t *testing.T) {
 	t.Parallel()
 
-	multiTransfer := createDCTNFTMultiTransferWithStubArguments()
+	multiTransfer := createDCDTNFTMultiTransferWithStubArguments()
 	err := multiTransfer.SetPayableChecker(nil)
 	assert.Equal(t, ErrNilPayableHandler, err)
 
@@ -262,24 +262,24 @@ func TestDCTNFTMultiTransfer_SetPayable(t *testing.T) {
 	assert.True(t, handler == multiTransfer.payableHandler) // pointer testing
 }
 
-func TestDCTNFTMultiTransfer_SetNewGasConfig(t *testing.T) {
+func TestDCDTNFTMultiTransfer_SetNewGasConfig(t *testing.T) {
 	t.Parallel()
 
-	multiTransfer := createDCTNFTMultiTransferWithStubArguments()
+	multiTransfer := createDCDTNFTMultiTransferWithStubArguments()
 	multiTransfer.SetNewGasConfig(nil)
 	assert.Equal(t, uint64(0), multiTransfer.funcGasCost)
 	assert.Equal(t, vmcommon.BaseOperationCost{}, multiTransfer.gasConfig)
 
 	gasCost := createMockGasCost()
 	multiTransfer.SetNewGasConfig(&gasCost)
-	assert.Equal(t, gasCost.BuiltInCost.DCTNFTMultiTransfer, multiTransfer.funcGasCost)
+	assert.Equal(t, gasCost.BuiltInCost.DCDTNFTMultiTransfer, multiTransfer.funcGasCost)
 	assert.Equal(t, gasCost.BaseOperationCost, multiTransfer.gasConfig)
 }
 
-func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionInvalidArgumentsShouldErr(t *testing.T) {
+func TestDCDTNFTMultiTransfer_ProcessBuiltinFunctionInvalidArgumentsShouldErr(t *testing.T) {
 	t.Parallel()
 
-	multiTransfer := createDCTNFTMultiTransferWithStubArguments()
+	multiTransfer := createDCDTNFTMultiTransferWithStubArguments()
 	vmOutput, err := multiTransfer.ProcessBuiltinFunction(&mock.UserAccountStub{}, &mock.UserAccountStub{}, nil)
 	assert.Nil(t, vmOutput)
 	assert.Equal(t, ErrNilVmInput, err)
@@ -304,7 +304,7 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionInvalidArgumentsShouldErr(t *
 		VMInput: vmcommon.VMInput{
 			CallValue:   big.NewInt(0),
 			CallerAddr:  senderAddress,
-			Arguments:   [][]byte{core.DCTSCAddress, big.NewInt(1).Bytes(), token1, big.NewInt(1).Bytes(), big.NewInt(1).Bytes()},
+			Arguments:   [][]byte{core.DCDTSCAddress, big.NewInt(1).Bytes(), token1, big.NewInt(1).Bytes(), big.NewInt(1).Bytes()},
 			GasProvided: 1,
 		},
 		RecipientAddr: senderAddress,
@@ -314,10 +314,10 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionInvalidArgumentsShouldErr(t *
 	assert.Equal(t, ErrInvalidRcvAddr, err)
 }
 
-func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnSameShardWithScCall(t *testing.T) {
+func TestDCDTNFTMultiTransfer_ProcessBuiltinFunctionOnSameShardWithScCall(t *testing.T) {
 	t.Parallel()
 
-	multiTransfer := createDCTNFTMultiTransferWithMockArguments(0, 1, &mock.GlobalSettingsHandlerStub{})
+	multiTransfer := createDCDTNFTMultiTransferWithMockArguments(0, 1, &mock.GlobalSettingsHandlerStub{})
 	payableChecker, _ := NewPayableCheckFunc(
 		&mock.PayableHandlerStub{
 			IsPayableCalled: func(address []byte) (bool, error) {
@@ -343,11 +343,11 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnSameShardWithScCall(t *test
 	tokenNonce := uint64(1)
 
 	initialTokens := big.NewInt(3)
-	createDCTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, multiTransfer.marshaller, sender.(vmcommon.UserAccountHandler))
-	createDCTNFTToken(token2, core.Fungible, 0, initialTokens, multiTransfer.marshaller, sender.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, multiTransfer.marshaller, sender.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token2, core.Fungible, 0, initialTokens, multiTransfer.marshaller, sender.(vmcommon.UserAccountHandler))
 
-	createDCTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, multiTransfer.marshaller, destination.(vmcommon.UserAccountHandler))
-	createDCTNFTToken(token2, core.Fungible, 0, initialTokens, multiTransfer.marshaller, destination.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, multiTransfer.marshaller, destination.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token2, core.Fungible, 0, initialTokens, multiTransfer.marshaller, destination.(vmcommon.UserAccountHandler))
 
 	_ = multiTransfer.accounts.SaveAccount(sender)
 	_ = multiTransfer.accounts.SaveAccount(destination)
@@ -398,10 +398,10 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnSameShardWithScCall(t *test
 	require.Equal(t, []byte(scCallArg), args[0])
 }
 
-func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnSameShardShouldCheckTokenValueLength(t *testing.T) {
+func TestDCDTNFTMultiTransfer_ProcessBuiltinFunctionOnSameShardShouldCheckTokenValueLength(t *testing.T) {
 	t.Parallel()
 
-	multiTransfer := createDCTNFTMultiTransferWithMockArguments(0, 1, &mock.GlobalSettingsHandlerStub{})
+	multiTransfer := createDCDTNFTMultiTransferWithMockArguments(0, 1, &mock.GlobalSettingsHandlerStub{})
 	payableChecker, _ := NewPayableCheckFunc(
 		&mock.PayableHandlerStub{
 			IsPayableCalled: func(address []byte) (bool, error) {
@@ -427,11 +427,11 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnSameShardShouldCheckTokenVa
 	tokenNonce := uint64(1)
 
 	initialTokens := big.NewInt(3)
-	createDCTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, multiTransfer.marshaller, sender.(vmcommon.UserAccountHandler))
-	createDCTNFTToken(token2, core.Fungible, 0, initialTokens, multiTransfer.marshaller, sender.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, multiTransfer.marshaller, sender.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token2, core.Fungible, 0, initialTokens, multiTransfer.marshaller, sender.(vmcommon.UserAccountHandler))
 
-	createDCTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, multiTransfer.marshaller, destination.(vmcommon.UserAccountHandler))
-	createDCTNFTToken(token2, core.Fungible, 0, initialTokens, multiTransfer.marshaller, destination.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, multiTransfer.marshaller, destination.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token2, core.Fungible, 0, initialTokens, multiTransfer.marshaller, destination.(vmcommon.UserAccountHandler))
 
 	_ = multiTransfer.accounts.SaveAccount(sender)
 	_ = multiTransfer.accounts.SaveAccount(destination)
@@ -472,7 +472,7 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnSameShardShouldCheckTokenVa
 	require.Empty(t, vmOutput)
 }
 
-func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsDestinationDoesNotHoldingNFTWithSCCall(t *testing.T) {
+func TestDCDTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsDestinationDoesNotHoldingNFTWithSCCall(t *testing.T) {
 	t.Parallel()
 
 	payableHandler := &mock.PayableHandlerStub{
@@ -481,10 +481,10 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsDestinationDoesN
 		},
 	}
 
-	multiTransferSenderShard := createDCTNFTMultiTransferWithMockArguments(1, 2, &mock.GlobalSettingsHandlerStub{})
+	multiTransferSenderShard := createDCDTNFTMultiTransferWithMockArguments(1, 2, &mock.GlobalSettingsHandlerStub{})
 	_ = multiTransferSenderShard.SetPayableChecker(payableHandler)
 
-	multiTransferDestinationShard := createDCTNFTMultiTransferWithMockArguments(0, 2, &mock.GlobalSettingsHandlerStub{})
+	multiTransferDestinationShard := createDCDTNFTMultiTransferWithMockArguments(0, 2, &mock.GlobalSettingsHandlerStub{})
 	_ = multiTransferDestinationShard.SetPayableChecker(payableHandler)
 
 	senderAddress := bytes.Repeat([]byte{1}, 32)
@@ -498,8 +498,8 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsDestinationDoesN
 	tokenNonce := uint64(1)
 
 	initialTokens := big.NewInt(3)
-	createDCTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
-	createDCTNFTToken(token2, core.Fungible, 0, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token2, core.Fungible, 0, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
 	_ = multiTransferSenderShard.accounts.SaveAccount(sender)
 	_, _ = multiTransferSenderShard.accounts.Commit()
 
@@ -567,7 +567,7 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsDestinationDoesN
 	require.Equal(t, []byte(scCallArg), args[0])
 }
 
-func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsDestinationAddToDctBalanceShouldErr(t *testing.T) {
+func TestDCDTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsDestinationAddToDcdtBalanceShouldErr(t *testing.T) {
 	t.Parallel()
 
 	payableHandler := &mock.PayableHandlerStub{
@@ -576,10 +576,10 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsDestinationAddTo
 		},
 	}
 
-	multiTransferSenderShard := createDCTNFTMultiTransferWithMockArguments(1, 2, &mock.GlobalSettingsHandlerStub{})
+	multiTransferSenderShard := createDCDTNFTMultiTransferWithMockArguments(1, 2, &mock.GlobalSettingsHandlerStub{})
 	_ = multiTransferSenderShard.SetPayableChecker(payableHandler)
 
-	multiTransferDestinationShard := createDCTNFTMultiTransferWithMockArguments(0, 2, &mock.GlobalSettingsHandlerStub{})
+	multiTransferDestinationShard := createDCDTNFTMultiTransferWithMockArguments(0, 2, &mock.GlobalSettingsHandlerStub{})
 	_ = multiTransferDestinationShard.SetPayableChecker(payableHandler)
 
 	senderAddress := bytes.Repeat([]byte{1}, 32)
@@ -593,8 +593,8 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsDestinationAddTo
 	tokenNonce := uint64(1)
 
 	initialTokens := big.NewInt(3)
-	createDCTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
-	createDCTNFTToken(token2, core.Fungible, 0, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token2, core.Fungible, 0, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
 	_ = multiTransferSenderShard.accounts.SaveAccount(sender)
 	_, _ = multiTransferSenderShard.accounts.Commit()
 
@@ -647,18 +647,18 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsDestinationAddTo
 
 	multiTransferDestinationShard.globalSettingsHandler = &mock.GlobalSettingsHandlerStub{
 		IsPausedCalled: func(tokenKey []byte) bool {
-			dctTokenKey := []byte(baseDCTKeyPrefix)
-			dctTokenKey = append(dctTokenKey, token2...)
-			return bytes.Equal(tokenKey, dctTokenKey)
+			dcdtTokenKey := []byte(baseDCDTKeyPrefix)
+			dcdtTokenKey = append(dcdtTokenKey, token2...)
+			return bytes.Equal(tokenKey, dcdtTokenKey)
 		},
 	}
 	vmOutput, err = multiTransferDestinationShard.ProcessBuiltinFunction(nil, destination.(vmcommon.UserAccountHandler), vmInput)
 	require.Error(t, err)
-	require.Equal(t, "dct token is paused for token token2", err.Error())
+	require.Equal(t, "dcdt token is paused for token token2", err.Error())
 	require.Nil(t, vmOutput)
 }
 
-func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsOneTransfer(t *testing.T) {
+func TestDCDTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsOneTransfer(t *testing.T) {
 	t.Parallel()
 
 	payableHandler := &mock.PayableHandlerStub{
@@ -667,10 +667,10 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsOneTransfer(t *t
 		},
 	}
 
-	multiTransferSenderShard := createDCTNFTMultiTransferWithMockArguments(0, 2, &mock.GlobalSettingsHandlerStub{})
+	multiTransferSenderShard := createDCDTNFTMultiTransferWithMockArguments(0, 2, &mock.GlobalSettingsHandlerStub{})
 	_ = multiTransferSenderShard.SetPayableChecker(payableHandler)
 
-	multiTransferDestinationShard := createDCTNFTMultiTransferWithMockArguments(1, 2, &mock.GlobalSettingsHandlerStub{})
+	multiTransferDestinationShard := createDCDTNFTMultiTransferWithMockArguments(1, 2, &mock.GlobalSettingsHandlerStub{})
 	_ = multiTransferDestinationShard.SetPayableChecker(payableHandler)
 
 	senderAddress := bytes.Repeat([]byte{2}, 32) // sender is in the same shard
@@ -682,7 +682,7 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsOneTransfer(t *t
 	tokenNonce := uint64(1)
 
 	initialTokens := big.NewInt(3)
-	createDCTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
 	_ = multiTransferSenderShard.accounts.SaveAccount(sender)
 	_, _ = multiTransferSenderShard.accounts.Commit()
 
@@ -719,7 +719,7 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsOneTransfer(t *t
 	destinationNumTokens1 := big.NewInt(1000)
 	destination, err := multiTransferDestinationShard.accounts.LoadAccount(destinationAddress)
 	require.Nil(t, err)
-	createDCTNFTToken(token1, core.NonFungible, tokenNonce, destinationNumTokens1, multiTransferDestinationShard.marshaller, destination.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token1, core.NonFungible, tokenNonce, destinationNumTokens1, multiTransferDestinationShard.marshaller, destination.(vmcommon.UserAccountHandler))
 	_ = multiTransferDestinationShard.accounts.SaveAccount(destination)
 	_, _ = multiTransferDestinationShard.accounts.Commit()
 
@@ -748,7 +748,7 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsOneTransfer(t *t
 	testNFTTokenShouldExist(t, multiTransferDestinationShard.marshaller, destination, token1, tokenNonce, expectedTokens1)
 }
 
-func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsDestinationHoldsNFT(t *testing.T) {
+func TestDCDTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsDestinationHoldsNFT(t *testing.T) {
 	t.Parallel()
 
 	payableHandler := &mock.PayableHandlerStub{
@@ -757,10 +757,10 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsDestinationHolds
 		},
 	}
 
-	multiTransferSenderShard := createDCTNFTMultiTransferWithMockArguments(0, 2, &mock.GlobalSettingsHandlerStub{})
+	multiTransferSenderShard := createDCDTNFTMultiTransferWithMockArguments(0, 2, &mock.GlobalSettingsHandlerStub{})
 	_ = multiTransferSenderShard.SetPayableChecker(payableHandler)
 
-	multiTransferDestinationShard := createDCTNFTMultiTransferWithMockArguments(1, 2, &mock.GlobalSettingsHandlerStub{})
+	multiTransferDestinationShard := createDCDTNFTMultiTransferWithMockArguments(1, 2, &mock.GlobalSettingsHandlerStub{})
 	_ = multiTransferDestinationShard.SetPayableChecker(payableHandler)
 
 	senderAddress := bytes.Repeat([]byte{2}, 32) // sender is in the same shard
@@ -773,8 +773,8 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsDestinationHolds
 	tokenNonce := uint64(1)
 
 	initialTokens := big.NewInt(3)
-	createDCTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
-	createDCTNFTToken(token2, core.Fungible, 0, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token2, core.Fungible, 0, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
 	_ = multiTransferSenderShard.accounts.SaveAccount(sender)
 	_, _ = multiTransferSenderShard.accounts.Commit()
 
@@ -813,8 +813,8 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsDestinationHolds
 	destinationNumTokens2 := big.NewInt(1000)
 	destination, err := multiTransferDestinationShard.accounts.LoadAccount(destinationAddress)
 	require.Nil(t, err)
-	createDCTNFTToken(token1, core.NonFungible, tokenNonce, destinationNumTokens1, multiTransferDestinationShard.marshaller, destination.(vmcommon.UserAccountHandler))
-	createDCTNFTToken(token2, core.Fungible, 0, destinationNumTokens2, multiTransferDestinationShard.marshaller, destination.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token1, core.NonFungible, tokenNonce, destinationNumTokens1, multiTransferDestinationShard.marshaller, destination.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token2, core.Fungible, 0, destinationNumTokens2, multiTransferDestinationShard.marshaller, destination.(vmcommon.UserAccountHandler))
 	_ = multiTransferDestinationShard.accounts.SaveAccount(destination)
 	_, _ = multiTransferDestinationShard.accounts.Commit()
 
@@ -845,7 +845,7 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsDestinationHolds
 	testNFTTokenShouldExist(t, multiTransferDestinationShard.marshaller, destination, token2, 0, expectedTokens2)
 }
 
-func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsShouldErr(t *testing.T) {
+func TestDCDTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsShouldErr(t *testing.T) {
 	t.Parallel()
 
 	payableChecker, _ := NewPayableCheckFunc(
@@ -859,10 +859,10 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsShouldErr(t *tes
 			},
 		})
 
-	multiTransferSenderShard := createDCTNFTMultiTransferWithMockArguments(0, 2, &mock.GlobalSettingsHandlerStub{})
+	multiTransferSenderShard := createDCDTNFTMultiTransferWithMockArguments(0, 2, &mock.GlobalSettingsHandlerStub{})
 	_ = multiTransferSenderShard.SetPayableChecker(payableChecker)
 
-	multiTransferDestinationShard := createDCTNFTMultiTransferWithMockArguments(1, 2, &mock.GlobalSettingsHandlerStub{})
+	multiTransferDestinationShard := createDCDTNFTMultiTransferWithMockArguments(1, 2, &mock.GlobalSettingsHandlerStub{})
 	_ = multiTransferDestinationShard.SetPayableChecker(payableChecker)
 
 	senderAddress := bytes.Repeat([]byte{2}, 32) // sender is in the same shard
@@ -875,8 +875,8 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsShouldErr(t *tes
 	tokenNonce := uint64(1)
 
 	initialTokens := big.NewInt(3)
-	createDCTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
-	createDCTNFTToken(token2, core.Fungible, 0, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token2, core.Fungible, 0, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
 	_ = multiTransferSenderShard.accounts.SaveAccount(sender)
 	_, _ = multiTransferSenderShard.accounts.Commit()
 
@@ -914,7 +914,7 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsShouldErr(t *tes
 	destinationNumTokens := big.NewInt(1000)
 	destination, err := multiTransferDestinationShard.accounts.LoadAccount(destinationAddress)
 	require.Nil(t, err)
-	createDCTNFTToken(token1, core.NonFungible, tokenNonce, destinationNumTokens, multiTransferDestinationShard.marshaller, destination.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token1, core.NonFungible, tokenNonce, destinationNumTokens, multiTransferDestinationShard.marshaller, destination.(vmcommon.UserAccountHandler))
 	_ = multiTransferDestinationShard.accounts.SaveAccount(destination)
 	_, _ = multiTransferDestinationShard.accounts.Commit()
 
@@ -947,7 +947,7 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsShouldErr(t *tes
 	require.Equal(t, "sending value to non payable contract", err.Error())
 	require.Nil(t, vmOutput)
 
-	// check the multi transfer for fungible DCT transfers as well
+	// check the multi transfer for fungible DCDT transfers as well
 	vmInput.Arguments = [][]byte{big.NewInt(2).Bytes(), token1, big.NewInt(0).Bytes(), quantityBytes, token2, big.NewInt(0).Bytes(), quantityBytes}
 	vmOutput, err = multiTransferDestinationShard.ProcessBuiltinFunction(nil, destination.(vmcommon.UserAccountHandler), vmInput)
 	require.Error(t, err)
@@ -955,11 +955,11 @@ func TestDCTNFTMultiTransfer_ProcessBuiltinFunctionOnCrossShardsShouldErr(t *tes
 	require.Nil(t, vmOutput)
 }
 
-func TestDCTNFTMultiTransfer_SndDstFrozen(t *testing.T) {
+func TestDCDTNFTMultiTransfer_SndDstFrozen(t *testing.T) {
 	t.Parallel()
 
 	globalSettings := &mock.GlobalSettingsHandlerStub{}
-	transferFunc := createDCTNFTMultiTransferWithMockArguments(0, 1, globalSettings)
+	transferFunc := createDCDTNFTMultiTransferWithMockArguments(0, 1, globalSettings)
 	_ = transferFunc.SetPayableChecker(&mock.PayableHandlerStub{})
 
 	senderAddress := bytes.Repeat([]byte{2}, 32) // sender is in the same shard
@@ -973,9 +973,9 @@ func TestDCTNFTMultiTransfer_SndDstFrozen(t *testing.T) {
 	tokenNonce := uint64(1)
 
 	initialTokens := big.NewInt(3)
-	createDCTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, transferFunc.marshaller, sender.(vmcommon.UserAccountHandler))
-	createDCTNFTToken(token2, core.Fungible, 0, initialTokens, transferFunc.marshaller, sender.(vmcommon.UserAccountHandler))
-	dctFrozen := DCTUserMetadata{Frozen: true}
+	createDCDTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, transferFunc.marshaller, sender.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token2, core.Fungible, 0, initialTokens, transferFunc.marshaller, sender.(vmcommon.UserAccountHandler))
+	dcdtFrozen := DCDTUserMetadata{Frozen: true}
 
 	_ = transferFunc.accounts.SaveAccount(sender)
 	_, _ = transferFunc.accounts.Commit()
@@ -997,16 +997,16 @@ func TestDCTNFTMultiTransfer_SndDstFrozen(t *testing.T) {
 
 	destination, _ := transferFunc.accounts.LoadAccount(destinationAddress)
 	tokenId := append(keyPrefix, token1...)
-	dctKey := computeDCTNFTTokenKey(tokenId, tokenNonce)
-	dctToken := &dct.DCToken{Value: big.NewInt(0), Properties: dctFrozen.ToBytes()}
-	marshaledData, _ := transferFunc.marshaller.Marshal(dctToken)
-	_ = destination.(vmcommon.UserAccountHandler).AccountDataHandler().SaveKeyValue(dctKey, marshaledData)
+	dcdtKey := computeDCDTNFTTokenKey(tokenId, tokenNonce)
+	dcdtToken := &dcdt.DCDigitalToken{Value: big.NewInt(0), Properties: dcdtFrozen.ToBytes()}
+	marshaledData, _ := transferFunc.marshaller.Marshal(dcdtToken)
+	_ = destination.(vmcommon.UserAccountHandler).AccountDataHandler().SaveKeyValue(dcdtKey, marshaledData)
 	_ = transferFunc.accounts.SaveAccount(destination)
 	_, _ = transferFunc.accounts.Commit()
 
 	_, err = transferFunc.ProcessBuiltinFunction(sender.(vmcommon.UserAccountHandler), destination.(vmcommon.UserAccountHandler), vmInput)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("%s for token %s", ErrDCTIsFrozenForAccount, string(token1)), err.Error())
+	assert.Equal(t, fmt.Sprintf("%s for token %s", ErrDCDTIsFrozenForAccount, string(token1)), err.Error())
 
 	globalSettings.IsLimiterTransferCalled = func(token []byte) bool {
 		return true
@@ -1023,10 +1023,10 @@ func TestDCTNFTMultiTransfer_SndDstFrozen(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestDCTNFTMultiTransfer_NotEnoughGas(t *testing.T) {
+func TestDCDTNFTMultiTransfer_NotEnoughGas(t *testing.T) {
 	t.Parallel()
 
-	transferFunc := createDCTNFTMultiTransferWithMockArguments(0, 1, &mock.GlobalSettingsHandlerStub{})
+	transferFunc := createDCDTNFTMultiTransferWithMockArguments(0, 1, &mock.GlobalSettingsHandlerStub{})
 	_ = transferFunc.SetPayableChecker(&mock.PayableHandlerStub{})
 
 	senderAddress := bytes.Repeat([]byte{2}, 32) // sender is in the same shard
@@ -1039,8 +1039,8 @@ func TestDCTNFTMultiTransfer_NotEnoughGas(t *testing.T) {
 	tokenNonce := uint64(1)
 
 	initialTokens := big.NewInt(3)
-	createDCTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, transferFunc.marshaller, sender.(vmcommon.UserAccountHandler))
-	createDCTNFTToken(token2, core.Fungible, 0, initialTokens, transferFunc.marshaller, sender.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, transferFunc.marshaller, sender.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token2, core.Fungible, 0, initialTokens, transferFunc.marshaller, sender.(vmcommon.UserAccountHandler))
 	_ = transferFunc.accounts.SaveAccount(sender)
 	_, _ = transferFunc.accounts.Commit()
 	// reload sender account
@@ -1063,10 +1063,10 @@ func TestDCTNFTMultiTransfer_NotEnoughGas(t *testing.T) {
 	assert.Equal(t, err, ErrNotEnoughGas)
 }
 
-func TestDCTNFTMultiTransfer_WithRewaValue(t *testing.T) {
+func TestDCDTNFTMultiTransfer_WithRewaValue(t *testing.T) {
 	t.Parallel()
 
-	transferFunc := createDCTNFTMultiTransferWithMockArguments(0, 1, &mock.GlobalSettingsHandlerStub{})
+	transferFunc := createDCDTNFTMultiTransferWithMockArguments(0, 1, &mock.GlobalSettingsHandlerStub{})
 	_ = transferFunc.SetPayableChecker(&mock.PayableHandlerStub{})
 
 	senderAddress := bytes.Repeat([]byte{2}, 32)
@@ -1079,8 +1079,8 @@ func TestDCTNFTMultiTransfer_WithRewaValue(t *testing.T) {
 	tokenNonce := uint64(1)
 
 	initialTokens := big.NewInt(3)
-	createDCTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, transferFunc.marshaller, sender.(vmcommon.UserAccountHandler))
-	createDCTNFTToken(token2, core.Fungible, 0, initialTokens, transferFunc.marshaller, sender.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, transferFunc.marshaller, sender.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token2, core.Fungible, 0, initialTokens, transferFunc.marshaller, sender.(vmcommon.UserAccountHandler))
 	_ = transferFunc.accounts.SaveAccount(sender)
 	_, _ = transferFunc.accounts.Commit()
 
@@ -1104,19 +1104,19 @@ func TestDCTNFTMultiTransfer_WithRewaValue(t *testing.T) {
 	require.Equal(t, ErrBuiltInFunctionCalledWithValue, err)
 }
 
-func TestComputeInsufficientQuantityDCTError(t *testing.T) {
+func TestComputeInsufficientQuantityDCDTError(t *testing.T) {
 	t.Parallel()
 
-	resErr := computeInsufficientQuantityDCTError([]byte("my-token"), 0)
+	resErr := computeInsufficientQuantityDCDTError([]byte("my-token"), 0)
 	require.NotNil(t, resErr)
 	require.Equal(t, errors.New("insufficient quantity for token: my-token").Error(), resErr.Error())
 
-	resErr = computeInsufficientQuantityDCTError([]byte("my-token-2"), 5)
+	resErr = computeInsufficientQuantityDCDTError([]byte("my-token-2"), 5)
 	require.NotNil(t, resErr)
 	require.Equal(t, errors.New("insufficient quantity for token: my-token-2 nonce 5").Error(), resErr.Error())
 }
 
-func TestDCTNFTMultiTransfer_LogEventsEpochActivationTest(t *testing.T) {
+func TestDCDTNFTMultiTransfer_LogEventsEpochActivationTest(t *testing.T) {
 	t.Parallel()
 
 	vmOutput, err := runMultiTransfer(t, false)
@@ -1124,10 +1124,10 @@ func TestDCTNFTMultiTransfer_LogEventsEpochActivationTest(t *testing.T) {
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
 	require.Equal(t, 2, len(vmOutput.Logs))
-	require.Equal(t, []byte("MultiDCTNFTTransfer"), vmOutput.Logs[0].Identifier)
+	require.Equal(t, []byte("MultiDCDTNFTTransfer"), vmOutput.Logs[0].Identifier)
 	require.Equal(t, 4, len(vmOutput.Logs[0].Topics))
 	require.Equal(t, []byte("token1"), vmOutput.Logs[0].Topics[0])
-	require.Equal(t, []byte("MultiDCTNFTTransfer"), vmOutput.Logs[1].Identifier)
+	require.Equal(t, []byte("MultiDCDTNFTTransfer"), vmOutput.Logs[1].Identifier)
 	require.Equal(t, 4, len(vmOutput.Logs[1].Topics))
 	require.Equal(t, []byte("token2"), vmOutput.Logs[1].Topics[0])
 
@@ -1136,7 +1136,7 @@ func TestDCTNFTMultiTransfer_LogEventsEpochActivationTest(t *testing.T) {
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
 	require.Equal(t, 1, len(vmOutput.Logs))
-	require.Equal(t, []byte("MultiDCTNFTTransfer"), vmOutput.Logs[0].Identifier)
+	require.Equal(t, []byte("MultiDCDTNFTTransfer"), vmOutput.Logs[0].Identifier)
 	require.Equal(t, 7, len(vmOutput.Logs[0].Topics))
 	require.Equal(t, []byte("token1"), vmOutput.Logs[0].Topics[0])
 	require.Equal(t, []byte("token2"), vmOutput.Logs[0].Topics[3])
@@ -1149,10 +1149,10 @@ func runMultiTransfer(t *testing.T, isScToScEventLogEnabled bool) (*vmcommon.VMO
 		},
 	}
 
-	multiTransferSenderShard := createDCTNFTMultiTransferWithMockArgumentsWithLogEventFlag(0, 2, &mock.GlobalSettingsHandlerStub{}, isScToScEventLogEnabled)
+	multiTransferSenderShard := createDCDTNFTMultiTransferWithMockArgumentsWithLogEventFlag(0, 2, &mock.GlobalSettingsHandlerStub{}, isScToScEventLogEnabled)
 	_ = multiTransferSenderShard.SetPayableChecker(payableHandler)
 
-	multiTransferDestinationShard := createDCTNFTMultiTransferWithMockArgumentsWithLogEventFlag(1, 2, &mock.GlobalSettingsHandlerStub{}, isScToScEventLogEnabled)
+	multiTransferDestinationShard := createDCDTNFTMultiTransferWithMockArgumentsWithLogEventFlag(1, 2, &mock.GlobalSettingsHandlerStub{}, isScToScEventLogEnabled)
 	_ = multiTransferDestinationShard.SetPayableChecker(payableHandler)
 
 	senderAddress := bytes.Repeat([]byte{2}, 32) // sender is in the same shard
@@ -1166,8 +1166,8 @@ func runMultiTransfer(t *testing.T, isScToScEventLogEnabled bool) (*vmcommon.VMO
 	token2Nonce := uint64(2)
 
 	initialTokens := big.NewInt(3)
-	createDCTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
-	createDCTNFTToken(token2, core.NonFungible, token2Nonce, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token1, core.NonFungible, tokenNonce, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
+	createDCDTNFTToken(token2, core.NonFungible, token2Nonce, initialTokens, multiTransferSenderShard.marshaller, sender.(vmcommon.UserAccountHandler))
 
 	_ = multiTransferSenderShard.accounts.SaveAccount(sender)
 	_, _ = multiTransferSenderShard.accounts.Commit()

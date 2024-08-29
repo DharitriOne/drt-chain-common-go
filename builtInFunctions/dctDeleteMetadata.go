@@ -6,13 +6,13 @@ import (
 
 	"github.com/DharitriOne/drt-chain-core-go/core"
 	"github.com/DharitriOne/drt-chain-core-go/core/check"
-	"github.com/DharitriOne/drt-chain-core-go/data/dct"
+	"github.com/DharitriOne/drt-chain-core-go/data/dcdt"
 	vmcommon "github.com/DharitriOne/drt-chain-vm-common-go"
 )
 
 const numArgsPerAdd = 3
 
-type dctDeleteMetaData struct {
+type dcdtDeleteMetaData struct {
 	baseActiveHandler
 	allowedAddress []byte
 	delete         bool
@@ -23,8 +23,8 @@ type dctDeleteMetaData struct {
 	function       string
 }
 
-// ArgsNewDCTDeleteMetadata defines the argument list for new dct delete metadata built in function
-type ArgsNewDCTDeleteMetadata struct {
+// ArgsNewDCDTDeleteMetadata defines the argument list for new dcdt delete metadata built in function
+type ArgsNewDCDTDeleteMetadata struct {
 	FuncGasCost         uint64
 	Marshalizer         vmcommon.Marshalizer
 	Accounts            vmcommon.AccountsAdapter
@@ -33,10 +33,10 @@ type ArgsNewDCTDeleteMetadata struct {
 	EnableEpochsHandler vmcommon.EnableEpochsHandler
 }
 
-// NewDCTDeleteMetadataFunc returns the dct metadata deletion built-in function component
-func NewDCTDeleteMetadataFunc(
-	args ArgsNewDCTDeleteMetadata,
-) (*dctDeleteMetaData, error) {
+// NewDCDTDeleteMetadataFunc returns the dcdt metadata deletion built-in function component
+func NewDCDTDeleteMetadataFunc(
+	args ArgsNewDCDTDeleteMetadata,
+) (*dcdtDeleteMetaData, error) {
 	if check.IfNil(args.Marshalizer) {
 		return nil, ErrNilMarshalizer
 	}
@@ -47,14 +47,14 @@ func NewDCTDeleteMetadataFunc(
 		return nil, ErrNilEnableEpochsHandler
 	}
 
-	e := &dctDeleteMetaData{
-		keyPrefix:      []byte(baseDCTKeyPrefix),
+	e := &dcdtDeleteMetaData{
+		keyPrefix:      []byte(baseDCDTKeyPrefix),
 		marshaller:     args.Marshalizer,
 		funcGasCost:    args.FuncGasCost,
 		accounts:       args.Accounts,
 		allowedAddress: args.AllowedAddress,
 		delete:         args.Delete,
-		function:       core.BuiltInFunctionMultiDCTNFTTransfer,
+		function:       core.BuiltInFunctionMultiDCDTNFTTransfer,
 	}
 
 	e.baseActiveHandler.activeHandler = func() bool {
@@ -65,11 +65,11 @@ func NewDCTDeleteMetadataFunc(
 }
 
 // SetNewGasConfig is called whenever gas cost is changed
-func (e *dctDeleteMetaData) SetNewGasConfig(_ *vmcommon.GasCost) {
+func (e *dcdtDeleteMetaData) SetNewGasConfig(_ *vmcommon.GasCost) {
 }
 
-// ProcessBuiltinFunction resolves DCT delete and add metadata function call
-func (e *dctDeleteMetaData) ProcessBuiltinFunction(
+// ProcessBuiltinFunction resolves DCDT delete and add metadata function call
+func (e *dcdtDeleteMetaData) ProcessBuiltinFunction(
 	_, _ vmcommon.UserAccountHandler,
 	vmInput *vmcommon.ContractCallInput,
 ) (*vmcommon.VMOutput, error) {
@@ -104,7 +104,7 @@ func (e *dctDeleteMetaData) ProcessBuiltinFunction(
 }
 
 // input is list(tokenID-numIntervals-list(start,end))
-func (e *dctDeleteMetaData) deleteMetadata(args [][]byte) error {
+func (e *dcdtDeleteMetaData) deleteMetadata(args [][]byte) error {
 	lenArgs := uint64(len(args))
 	if lenArgs < 4 {
 		return ErrInvalidNumOfArgs
@@ -144,7 +144,7 @@ func (e *dctDeleteMetaData) deleteMetadata(args [][]byte) error {
 	return nil
 }
 
-func (e *dctDeleteMetaData) deleteMetadataForListIntervals(
+func (e *dcdtDeleteMetaData) deleteMetadataForListIntervals(
 	systemAcc vmcommon.UserAccountHandler,
 	tokenID []byte,
 	args [][]byte,
@@ -168,7 +168,7 @@ func (e *dctDeleteMetaData) deleteMetadataForListIntervals(
 	return nil
 }
 
-func (e *dctDeleteMetaData) deleteMetadataForInterval(
+func (e *dcdtDeleteMetaData) deleteMetadataForInterval(
 	systemAcc vmcommon.UserAccountHandler,
 	tokenID []byte,
 	startIndex, endIndex uint64,
@@ -180,11 +180,11 @@ func (e *dctDeleteMetaData) deleteMetadataForInterval(
 		return ErrInvalidNonce
 	}
 
-	dctTokenKey := append(e.keyPrefix, tokenID...)
+	dcdtTokenKey := append(e.keyPrefix, tokenID...)
 	for nonce := startIndex; nonce <= endIndex; nonce++ {
-		dctNFTTokenKey := computeDCTNFTTokenKey(dctTokenKey, nonce)
+		dcdtNFTTokenKey := computeDCDTNFTTokenKey(dcdtTokenKey, nonce)
 
-		err := systemAcc.AccountDataHandler().SaveKeyValue(dctNFTTokenKey, nil)
+		err := systemAcc.AccountDataHandler().SaveKeyValue(dcdtNFTTokenKey, nil)
 		if err != nil {
 			return err
 		}
@@ -194,7 +194,7 @@ func (e *dctDeleteMetaData) deleteMetadataForInterval(
 }
 
 // input is list(tokenID-nonce-metadata)
-func (e *dctDeleteMetaData) addMetadata(args [][]byte) error {
+func (e *dcdtDeleteMetaData) addMetadata(args [][]byte) error {
 	if len(args)%numArgsPerAdd != 0 || len(args) < numArgsPerAdd {
 		return ErrInvalidNumOfArgs
 	}
@@ -215,9 +215,9 @@ func (e *dctDeleteMetaData) addMetadata(args [][]byte) error {
 			return ErrInvalidTokenID
 		}
 
-		dctTokenKey := append(e.keyPrefix, tokenID...)
-		dctNFTTokenKey := computeDCTNFTTokenKey(dctTokenKey, nonce)
-		metaData := &dct.MetaData{}
+		dcdtTokenKey := append(e.keyPrefix, tokenID...)
+		dcdtNFTTokenKey := computeDCDTNFTTokenKey(dcdtTokenKey, nonce)
+		metaData := &dcdt.MetaData{}
 		err = e.marshaller.Unmarshal(metaData, args[i+2])
 		if err != nil {
 			return err
@@ -226,8 +226,8 @@ func (e *dctDeleteMetaData) addMetadata(args [][]byte) error {
 			return ErrInvalidMetadata
 		}
 
-		var tokenFromSystemSC *dct.DCToken
-		tokenFromSystemSC, err = e.getDCTDigitalTokenDataFromSystemAccount(systemAcc, dctNFTTokenKey)
+		var tokenFromSystemSC *dcdt.DCDigitalToken
+		tokenFromSystemSC, err = e.getDCDTDigitalTokenDataFromSystemAccount(systemAcc, dcdtNFTTokenKey)
 		if err != nil {
 			return err
 		}
@@ -237,13 +237,13 @@ func (e *dctDeleteMetaData) addMetadata(args [][]byte) error {
 		}
 
 		if tokenFromSystemSC == nil {
-			tokenFromSystemSC = &dct.DCToken{
+			tokenFromSystemSC = &dcdt.DCDigitalToken{
 				Value: big.NewInt(0),
 				Type:  uint32(core.NonFungible),
 			}
 		}
 		tokenFromSystemSC.TokenMetaData = metaData
-		err = e.marshalAndSaveData(systemAcc, tokenFromSystemSC, dctNFTTokenKey)
+		err = e.marshalAndSaveData(systemAcc, tokenFromSystemSC, dcdtNFTTokenKey)
 		if err != nil {
 			return err
 		}
@@ -257,11 +257,11 @@ func (e *dctDeleteMetaData) addMetadata(args [][]byte) error {
 	return nil
 }
 
-func (e *dctDeleteMetaData) getDCTDigitalTokenDataFromSystemAccount(
+func (e *dcdtDeleteMetaData) getDCDTDigitalTokenDataFromSystemAccount(
 	systemAcc vmcommon.UserAccountHandler,
-	dctNFTTokenKey []byte,
-) (*dct.DCToken, error) {
-	marshaledData, _, err := systemAcc.AccountDataHandler().RetrieveValue(dctNFTTokenKey)
+	dcdtNFTTokenKey []byte,
+) (*dcdt.DCDigitalToken, error) {
+	marshaledData, _, err := systemAcc.AccountDataHandler().RetrieveValue(dcdtNFTTokenKey)
 	if core.IsGetNodeFromDBError(err) {
 		return nil, err
 	}
@@ -269,16 +269,16 @@ func (e *dctDeleteMetaData) getDCTDigitalTokenDataFromSystemAccount(
 		return nil, nil
 	}
 
-	dctData := &dct.DCToken{}
-	err = e.marshaller.Unmarshal(dctData, marshaledData)
+	dcdtData := &dcdt.DCDigitalToken{}
+	err = e.marshaller.Unmarshal(dcdtData, marshaledData)
 	if err != nil {
 		return nil, err
 	}
 
-	return dctData, nil
+	return dcdtData, nil
 }
 
-func (e *dctDeleteMetaData) getSystemAccount() (vmcommon.UserAccountHandler, error) {
+func (e *dcdtDeleteMetaData) getSystemAccount() (vmcommon.UserAccountHandler, error) {
 	systemSCAccount, err := e.accounts.LoadAccount(vmcommon.SystemAccountAddress)
 	if err != nil {
 		return nil, err
@@ -292,17 +292,17 @@ func (e *dctDeleteMetaData) getSystemAccount() (vmcommon.UserAccountHandler, err
 	return userAcc, nil
 }
 
-func (e *dctDeleteMetaData) marshalAndSaveData(
+func (e *dcdtDeleteMetaData) marshalAndSaveData(
 	systemAcc vmcommon.UserAccountHandler,
-	dctData *dct.DCToken,
-	dctNFTTokenKey []byte,
+	dcdtData *dcdt.DCDigitalToken,
+	dcdtNFTTokenKey []byte,
 ) error {
-	marshaledData, err := e.marshaller.Marshal(dctData)
+	marshaledData, err := e.marshaller.Marshal(dcdtData)
 	if err != nil {
 		return err
 	}
 
-	err = systemAcc.AccountDataHandler().SaveKeyValue(dctNFTTokenKey, marshaledData)
+	err = systemAcc.AccountDataHandler().SaveKeyValue(dcdtNFTTokenKey, marshaledData)
 	if err != nil {
 		return err
 	}
@@ -311,6 +311,6 @@ func (e *dctDeleteMetaData) marshalAndSaveData(
 }
 
 // IsInterfaceNil returns true if underlying object is nil
-func (e *dctDeleteMetaData) IsInterfaceNil() bool {
+func (e *dcdtDeleteMetaData) IsInterfaceNil() bool {
 	return e == nil
 }
